@@ -18,6 +18,24 @@ What makes an effective data visualization? What are the essential components/ch
 
 Come up with a consensus list among your group members. 
 
+Axis names
+Title (headline content dependent)
+Clear legend
+Units
+Readable letter Sizes (legible font sizes)
+Color blind proof (accessible)
+
+data point size-large/small enough
+
+Type of graph adequate (appropriate) to your data (pie, bar, points, etc)
+Attractive and logical color palettes
+
+appropriate axis scales
+
+Interactive? Maybe
+
+
+
 Compare your list to other groups' lists. 
 
 ## Exploring web resources for visualization
@@ -25,7 +43,8 @@ Compare your list to other groups' lists.
 1. Navigate to https://www.data-to-viz.com/.
 2. Think of a dataset that you or someone in your field might want to visualize. What types of variables does this dataset contain? What information might you want to convey with a visualization?
 
-<add notes here>
+Water rigths, groundwater levels, flow.
+Names, address, location, units of flow, units of volume, comments. time series
 
 3. Scroll to the "Explore" section of the website. Follow the flow chart to find a type of graph that would suit your data. Click for more information and a link to the R Graph Gallery. If there are multiple options for graphing your data, how might you choose between them?
 
@@ -44,12 +63,12 @@ In general, the ggplot base color palettes are not the most effective option for
 
 <add notes here>
 
-RColorBrewer (package)
+RColorBrewer (package) (Kateri)
 
 * http://colorbrewer2.org
 * https://moderndata.plot.ly/create-colorful-graphs-in-r-with-rcolorbrewer-and-plotly/
 
-viridis and viridisLite (packages)
+viridis and viridisLite (packages) (Kateri)
 
 * https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html
 * https://ggplot2.tidyverse.org/reference/scale_viridis.html
@@ -58,7 +77,7 @@ colorRamp (function; comes with base R as part of the grDevices package)
 
 * https://bookdown.org/rdpeng/exdata/plotting-and-color-in-r.html#colorramp
 
-LaCroixColoR (package)
+LaCroixColoR (package) (Kateri)
 
 * https://github.com/johannesbjork/LaCroixColoR
 
@@ -76,7 +95,7 @@ pal_futurama (function; comes in the ggsci package)
 getwd()
 
 #install.packages(tidyverse)
-#install.packages(dataRetrieval)
+#install.packages('dataRetrieval')
 #install.packages(zoo)
 #install.packages(ggrepel)
 
@@ -129,6 +148,15 @@ hint: package dplyr in tidyverse includes a `mutate` function
 
 hint: package dplyr in tidyverse includes a `mutate` function
 hint: package zoo includes a `rollmean` function
+
+```{r}
+EnoDischarge <- mutate(EnoDischarge, Rolling.Mean = rollmean(Discharge, 30, fill=NA))
+
+```
+
+
+
+
 
 4. Update your ggplot theme
 
