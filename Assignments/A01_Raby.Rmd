@@ -50,6 +50,8 @@ Did you complete the form? (yes/no)
 6. Set up your work session. Check your working directory, load packages `tidyverse`,  `dataRetrieval`, and `lubridate`. Set your ggplot theme as theme_classic (you may need to look up how to set your theme).
 
 ```{r, message = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+
 getwd()
 
 library(tidyverse)
@@ -73,17 +75,40 @@ EnoGageHeight <- readNWISdv(siteNumbers = "02096500",
                      startDate = "2009-08-01",
                      endDate = "2019-07-31")
 
-# Renaming columns
-attr(EnoDischarge, "variableInfo")
 
-names(EnoDischarge)[4:5] <- c("Discharge(ft3/s)", "Approval.Code")
-names(EnoGageHeight)[4:5] <- c("GageHeight(ft)", "Approval.Code")
+
+# Renaming columns
+
+names(EnoDischarge)[1:2] <- c("Agency.Discharge","Site_No.Discharge")
+names(EnoDischarge)[4:5] <- c("Discharge_ft3.s","Discharge.Approval.Code")
+names(EnoGageHeight)[1:2] <- c("Agency.GageHeight","Site_No.GageHeight")
+names(EnoGageHeight)[4:5] <- c("GageHeight_ft","GageHeight.Approval.Code")
+
+#Data exploring
+
+str(EnoDischarge)
+str(EnoGageHeight)
+
+#Dates Correctly Formated. Discharge and Height data correctly formated as numeric.
+
+summary(EnoDischarge$Discharge_ft3.s)
+summary(EnoGageHeight$GageHeight_ft)
+
+any(is.na(EnoDischarge$Discharge_ft3.s))
+any(is.na(EnoGageHeight$GageHeight_ft))
+#No NAs in the data
+
+EnoDischarge_GageHeight <- EnoGageHeight %>%
+left_join(EnoDischarge, by = "Date")
+
 
 ```
 
 8. Add a "year" column to your data frame (hint: lubridate has a `year` function).
 
 ```{r}
+
+EnoDischarge_GageHeight <- mutate(EnoDischarge_GageHeight, year = year(Date))
 
 ```
 
@@ -95,11 +120,18 @@ names(EnoGageHeight)[4:5] <- c("GageHeight(ft)", "Approval.Code")
 
 ```{r}
 
+ggplot(EnoDischarge_GageHeight, aes(x = GageHeight_ft, y = Discharge_ft3.s)) +
+  geom_point(aes(color = factor(year)), size = 4, alpha = 0.5) +
+  scale_color_brewer(palette = "Paired") +
+  xlab(expression("Gage Height (ft)")) +
+  ylab(expression("Discharge ft3/s")) +
+  labs(color = 'Year')
+
 ```
 
 10. Interpret the graph you made. Write 2-3 sentences communicating the main takeaway points. 
 
-> ANSWER: 
+> ANSWER: The Gage Height vs Discharge function appears to be parabolic although there are years that some of the values fall slightly outside the curve such as 2010, 2016, 2018. This phenomenon could be produced by a decalibration in the sensors that are measuring gage height and flow. It also could be produced by a bad designed gage that under certain conditions the height in it is influenced by downstream flow. 2018 and 2017 have the highest Discharge and Gage Height values recorded.
 
 11. Create a ggplot violin plot of discharge, divided by year. (Hint: in your aesthetics, specify year as a factor rather than a continuous variable). Make the following edits to follow good data visualization practices: 
 
@@ -107,8 +139,16 @@ names(EnoGageHeight)[4:5] <- c("GageHeight(ft)", "Approval.Code")
 * Add a horizontal line at the 0.5 quantile within each violin (hint: draw_quantiles)
 ```{r}
 
+ggplot(EnoDischarge_GageHeight, aes(x = factor(year), y = Discharge_ft3.s)) +
+  geom_violin(aes(fill = factor(year)), draw_quantiles = 0.5) +
+  scale_fill_brewer(palette = "Set3") +
+  xlab(expression("")) +
+  theme(legend.position = "none") +
+  ylab(expression("Discharge ft3/s"))
+
+
 ```
 
 12. Interpret the graph you made. Write 2-3 sentences communicating the main takeaway points. 
 
-> ANSWER: 
+> ANSWER: In the graph it can be observed that the data is positively skewed as it is expected for flow data. The tail on the right side of the distribution is definitely longer. The year with highest discharge recorded is 2018. Years 2017 and 2019 were also high discharge years. The year with lowest discharge recorded was 2011, which started a period of relatively low discharges up to year 2016. Even though year 2017 has high discharge values recorded, it has a relatively low median compared to the others years considered in the study.
