@@ -150,13 +150,9 @@ hint: package dplyr in tidyverse includes a `mutate` function
 hint: package zoo includes a `rollmean` function
 
 ```{r}
-EnoDischarge <- mutate(EnoDischarge, Rolling.Mean = rollmean(Discharge, 30, fill=NA))
+EnoDischarge <- mutate(EnoDischarge, ThirtyDayRolling.Mean = rollmean(Discharge, 30, fill=NA))
 
 ```
-
-
-
-
 
 4. Update your ggplot theme
 
