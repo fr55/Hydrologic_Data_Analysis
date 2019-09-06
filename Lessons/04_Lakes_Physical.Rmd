@@ -17,6 +17,14 @@ editor_options:
 ## Opening Discussion
 We analyzed temperature profiles and seasonal changes on Wednesday. What were some key takeaway points about thermal stratification and mixing?
 
+<Epilimnion: surface layer. well mixed, Metalimnion: rapid change, middle. , Hypolimnion: cold bottom layer that separated from the surface layer layer by the meta...
+
+We dont always have them. Really shallow lake that fully mixed. Spring and fall mixing.
+
+Storng density gradient.
+
+4°C max density liquid water. Preparing to become ice. Colder goes up.>
+
 ## Session Set Up
 ```{r, message = FALSE}
 getwd()
@@ -24,7 +32,7 @@ getwd()
 library(tidyverse)
 library(gridExtra)
 library(cowplot)
-library(lubridate)
+library(lubridate) #lets you do things with dates.
 
 NTLdata <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 
@@ -38,7 +46,7 @@ theme_set(theme_classic())
 
 ```{r}
 # Change sampledate to Date
-NTLdata$sampledate <- as.Date(NTLdata$sampledate, "%m/%d/%y")
+NTLdata$sampledate <- as.Date(NTLdata$sampledate, "%m/%d/%y") # the format it comes in
 
 # Make three data frames, one for each lake
 Pauldata <- filter(NTLdata, lakename == "Paul Lake")
@@ -60,7 +68,7 @@ Tempprofiles2016 <-
   geom_point() +
   scale_y_reverse() +
   scale_x_continuous(position = "top") +
-  scale_color_viridis_c(end = 0.8, option = "magma") +
+  scale_color_viridis_c(end = 0.8, option = "magma") + #not use the yellow (you can specify end and start colors)
   labs(x = expression("Temperature "(degree*C)), y = "Depth (m)") +
   theme(legend.position = "none")
 print(Tempprofiles2016)
@@ -88,24 +96,29 @@ Oxygenprofiles2016 <-
 print(Oxygenprofiles2016)
 
 Physicalprofiles2016 <- 
-  plot_grid(Tempprofiles2016, Lightprofiles2016, Oxygenprofiles2016, 
+  plot_grid(Tempprofiles2016, Lightprofiles2016, Oxygenprofiles2016, #int he cow package
             ncol = 3, rel_widths = c(1.25, 1, 1.5))
 print(Physicalprofiles2016)
 
+#she kept the ticks in the y axis. To keep reference.
 ```
 
 How do temperature profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> It always goes down with depth but the range is higher during the summer. Temperatures in the hypolimnion dont change. Air temperture influence the temperature in the epilimnion. Ther eis mixing there. Meta is a transition to the hypo where there is no effect.
 
 How do irradiance profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> The irradience goes down with depth. Is higher in summer. There is less effect in shallow waters. You could have algae blooms or cloudy day. (explaining the orange minimum)
 
 How do dissolved oxygen profiles vary over the course of a season? What are the mechanisms for this pattern?
 
-> 
+> Is constant upto 2.5 meters then it goes up and then sudden drop. DO goes up and temperature goes down. MOre T less DO.
 
+>Biologicaly and chemicaly active.
+>Colder water holds more water. 
+> Goes up to saturation because it drops temperature and photosynthesis. the phytoplancton hangs up in the top of the hypolimniun. Enough light and nutrients.
+>Hypolimnion. Respiration (bacteria, zooplancton). Phytoplancton dies, goes down and bacteria creates Nutrients. It is sudden because the phytoplancton is the source and cant be that deep.
 
 ## Data Analysis
 
@@ -122,8 +135,34 @@ Steps:
 5. Create a ggplot of surface temps by date and facet by month. Add `geom_smooth(se = FALSE, method = lm)` to the plot to display the regression line.
 
 ```{r}
+Pauldata$Month <- month(Pauldata$sampledate)
+Pauldata.Winter <- filter(Pauldata, Month == 5 | Month == 6 | Month == 7 | Month == 8)
 
+Pauldata.May <- filter(Pauldata, Month == 5)
+Pauldata.June <- filter(Pauldata, Month == 6)
+Pauldata.July <- filter(Pauldata, Month == 7)
+Pauldata.August <- filter(Pauldata, Month == 8)
 
+lm.may <- lm(Pauldata.May$temperature_C~Pauldata.May$year4)
+summary(lm.May)
+
+lm.June <- lm(Pauldata.June$temperature_C~Pauldata.June$year4)
+summary(lm.June)
+
+lm.July <- lm(Pauldata.July$temperature_C~Pauldata.July$year4)
+summary(lm.July)
+
+lm.August <- lm(Pauldata.August$temperature_C~Pauldata.August$year4)
+summary(lm.August)
+
+Tempchange.plot <-
+  ggplot(Pauldata.Winter, aes(x = sampledate, y = temperature_C)) +
+  geom_point() +
+  geom_smooth(se=FALSE, method =lm) +
+  facet_grid(rows=vars(Month))
+  print(Tempchange.plot)
+
+# Think aboutthe units. Is it importnat 1°C.
 
 ```
 
