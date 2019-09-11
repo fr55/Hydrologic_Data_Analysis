@@ -16,6 +16,14 @@ editor_options:
 ## Opening Discussion
 What are the physical properties of streams and rivers? What variables might be of interest?
 
+velocity [L/T], 
+discharge [V/T], 
+bed material (erosion). 
+Temperature, 
+mixing (turbulent + laminar flow), 
+turbidity. 
+Slope
+
 ## Session Set Up
 
 ```{r, message = FALSE}
@@ -31,11 +39,11 @@ theme_set(theme_classic())
 
 ## Discharge
 
-One of the most important physical characteristics of a stream or river is **discharge**, the volume of water moving through the stream over a given amount of time. Discharge can be measured directly by measuring the velocity of flow in several spots in a stream and multiplying the flow velocity over the cross-sectional area of the stream. However, this method is effort-intensive. An easier way to approximate discharge is by developing a **rating curve** for a stream at a given sampling point. To develop a rating curve, a series of measurements of discharge and stream stage must be made together to develop a mathematical relationship. Then, subsequent discharge measurements can be calculated from a measurement of stream stage, measured by a gage that takes readings remotely. 
+One of the most important physical characteristics of a stream or river is **discharge**, the volume of water moving through the stream over a given amount of time. Discharge can be measured directly by measuring the velocity of flow in several spots in a stream and multiplying the flow velocity over the cross-sectional area of the stream. However, this method is effort-intensive. An easier way to approximate discharge is by developing a **rating curve** for a stream at a given sampling point. To develop a rating curve, a series of measurements of discharge and stream stage must be made together to develop a mathematical relationship. Then, subsequent discharge measurements can be calculated from a measurement of stream stage (water height), measured by a gage that takes readings remotely. 
 
 ```{r}
 EnoDischarge.ratingcurve <- readNWISdv(siteNumbers = "02096500",
-                     parameterCd = c("00060", "00065"),
+                     parameterCd = c("00060", "00065"), #taking both data
                      startDate = "2009-08-01",
                      endDate = "2019-07-31")
 
@@ -43,9 +51,11 @@ names(EnoDischarge.ratingcurve)[4:7] <- c("Discharge", "D.Approval.Code",
                                           "Gage.Height", "GH.Approval.Code")
 
 DvsGHplot <-
-  ggplot(EnoDischarge.ratingcurve, aes(x = Discharge, y = Gage.Height)) +
+  ggplot(EnoDischarge.ratingcurve, aes(x = Gage.Height, y = Discharge)) +
   geom_point(alpha = 0.5) 
 print(DvsGHplot)
+
+# is a log relationship. the slope decreases with the increase of the y.
 ```
 
 ### Data import
@@ -76,9 +86,9 @@ What data are available from the sites? Pay particular attention to the paramete
 
 >
 
-What is the period of record for mean daily discharge at each of these sites?
+What is the period of record for mean daily discharge at each of these sites? 600 03
 
-> Eno River: 
+> Eno River: 1928-10-01	2019-09-10
 
 > Verde River: 
 
@@ -96,7 +106,7 @@ We will access the last 10 years of data for our purposes today. Alternatively, 
 # Import data
 EnoDischarge <- readNWISdv(siteNumbers = "02096500",
                      parameterCd = "00060", # discharge (ft3/s)
-                     startDate = "2009-09-01",
+                     startDate = "2009-09-01",# if you leave the period blank it gives you eveything
                      endDate = "2019-08-31")
 
 VerdeDischarge <- readNWISdv(siteNumbers = "09504000",
@@ -118,7 +128,7 @@ NehalemDischarge <- readNWISdv(siteNumbers = "14299800",
                      parameterCd = "00060", # discharge (ft3/s)
                      startDate = "2009-09-01",
                      endDate = "2019-08-31")
-
+#the column has the code of the type of data. Why did it import only 003? It was the default.
 ```
 
 ### Data Wrangling
@@ -208,7 +218,7 @@ Which of these rivers have a seasonal cycle of discharge? How might you explain 
 
 Hypothetical question: If you wanted to create a ggplot using facets instead of `plot_grid`, how would you go about wrangling your dataset differently? 
 
->
+> rbind and facet.
 
 ## Defining "typical" discharge pattern
 Let's take the Bitterroot River, which displays a clear seasonal cycle. Let's define the median discharge on a given day of year and overlay this onto the range experienced. We will take a longer period of record this time.
@@ -237,6 +247,9 @@ BitterrootPatternPlot <-
   labs(x = "Day of Year", y = expression("Discharge (ft"^3*"/s)")) 
 print(BitterrootPatternPlot)
 ```
+
+
+> Consistent peak. 95% is better becuase means something statisticaly. Max and min realy sensible to outliers.
 
 Challenge: Edit the code above so that rather than plotting the minimum and maximum discharge, you are plotting the 95 % confidence interval of the discharge on a given date. Hint: look up the formula for confidence interval.
 
