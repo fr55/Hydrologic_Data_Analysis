@@ -136,14 +136,15 @@ Steps:
 
 ```{r}
 Pauldata$Month <- month(Pauldata$sampledate)
-Pauldata.Winter <- filter(Pauldata, Month == 5 | Month == 6 | Month == 7 | Month == 8)
+Pauldata.Summer <- filter(Pauldata, Month == 5 | Month == 6 | Month == 7 | Month == 8)
+Pauldata.Summer.Surface <- filter(Pauldata.Summer, depth == 0)
 
-Pauldata.May <- filter(Pauldata, Month == 5)
-Pauldata.June <- filter(Pauldata, Month == 6)
-Pauldata.July <- filter(Pauldata, Month == 7)
-Pauldata.August <- filter(Pauldata, Month == 8)
+Pauldata.May <- filter(Pauldata.Summer.Surface, Month == 5)
+Pauldata.June <- filter(Pauldata.Summer.Surface, Month == 6)
+Pauldata.July <- filter(Pauldata.Summer.Surface, Month == 7)
+Pauldata.August <- filter(Pauldata.Summer.Surface, Month == 8)
 
-lm.may <- lm(Pauldata.May$temperature_C~Pauldata.May$year4)
+lm.May <- lm(Pauldata.May$temperature_C~Pauldata.May$year4)
 summary(lm.May)
 
 lm.June <- lm(Pauldata.June$temperature_C~Pauldata.June$year4)
@@ -156,7 +157,7 @@ lm.August <- lm(Pauldata.August$temperature_C~Pauldata.August$year4)
 summary(lm.August)
 
 Tempchange.plot <-
-  ggplot(Pauldata.Winter, aes(x = sampledate, y = temperature_C)) +
+  ggplot(Pauldata.Summer.Surface, aes(x = sampledate, y = temperature_C)) +
   geom_point() +
   geom_smooth(se=FALSE, method =lm) +
   facet_grid(rows=vars(Month))
