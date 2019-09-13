@@ -10,11 +10,15 @@ editor_options:
 
 ## Lesson Objectives
 1. Compute recurrence intervals for stream discharge 
-2. Analyze the effects of watershed disturbance on recurrence intervals and interpret results against the concept of stationarity
+2. Analyze the effects of watershed disturbance on recurrence intervals and interpret results against the concept of stationarity (climate change, phisical manipulation of the watershed, etc)
 3. Communicate findings with peers through oral, visual, and written modes
 
 ## Opening Discussion
 How is climate change impacting discharge in streams and rivers? What are the new and ongoing challenges faced by these impacts in watersheds?
+
+>Longer dry periods. More intensity. Water warmer affects ecosystems. Storage changes. Changes on statistical parameters that were used to design things. 
+
+>Change in seasonal patterns. Less predictable.  Decreasing snowpacks. Hydropower. Impact the timing of the rains. Changes on freezings. Problem with fruits.
 
 ## Session Set Up
 
@@ -45,6 +49,8 @@ This is where the terms "100-year flood" and similar are derived. Remember this 
 
 ### Has Eno River dicharge displayed stationary behavior over the period of record?
 
+>not moving target. The conditions are not changing. You can predict.
+
 Let's import discharge data for the Eno River near Durham for all available dates.
 
 ```{r}
@@ -68,6 +74,8 @@ print(EnoPlot)
 
 We can then compute recurrence intervals based on the first 30 years of data.
 
+>The USGS uses 30 years of data for recurrence intervals. Golden number
+
 ```{r}  
 EnoDischarge <- 
   EnoDischarge %>%
@@ -78,7 +86,7 @@ EnoRecurrence <-
   filter(Year < 1993) %>%
   group_by(Year) %>%
   summarise(PeakDischarge = max(Discharge)) %>% 
-  mutate(Rank = rank(-PeakDischarge), 
+  mutate(Rank = rank(-PeakDischarge), #from 0ne to thirty. the negative gives the direction
          RecurrenceInterval = (length(Year) + 1)/Rank, 
          Probability = 1/RecurrenceInterval)
 
@@ -98,7 +106,7 @@ EnoRecurrencePlot <-
 print(EnoRecurrencePlot)
 
 Eno.RImodel <- lm(data = EnoRecurrence, PeakDischarge ~ log(RecurrenceInterval))
-summary(Eno.RImodel)
+summary(Eno.RImodel) #log because we saw the data in a graph.
 
 #What is the discharge for a 100-year flood in this system? a 500-year flood?
 Eno.RImodel$coefficients[1] + Eno.RImodel$coefficients[2]*log(100)
@@ -137,11 +145,12 @@ Eno.RImodel$coefficients[1] + Eno.RImodel$coefficients[2]*log(500)
 
 What differences did you see for the recurrence intervals built under different periods of record? How would your prediction of flood events differ if you were to use these models for forecasting purposes? 
 
->
+> Having more data is useful. The full data includes higher discharge periods. Therefore, the coeficients are higher. The full data has a steeper slope.
 
 What would you recommend for a watershed manager seeking to build the most accurate recurrence interval model for the Eno River?
 
-> 
+> To include all the data available. 
+Moving windows. You include some nonstationary information.
 
 
 ### Examining the effects of urbanization on discharge
@@ -164,6 +173,76 @@ SaladoPlot <-
 print(SaladoPlot)
 
 # add more code here: 
+
+SaladoDischarge <- 
+  SaladoDischarge %>%
+  mutate(Year = year(Date))
+
+############################ First #####################3
+SaladoRecurrence <- 
+  SaladoDischarge %>%
+  filter(Year < 1990) %>%
+  group_by(Year) %>%
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge), #from 0ne to thirty. the negative gives the direction
+         RecurrenceInterval = (length(Year) + 1)/Rank, 
+         Probability = 1/RecurrenceInterval)
+
+SaladoPeakPlot1 <- 
+  ggplot(SaladoRecurrence, aes(x = Year, y = PeakDischarge)) +
+         geom_bar(stat = "identity") +
+         xlab("Year")
+print(SaladoPeakPlot1)
+
+Salado1RecurrencePlot <- 
+  ggplot(SaladoRecurrence, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() #+
+  #scale_x_log10() 
+print(Salado1RecurrencePlot)
+
+Salado.RImodel <- lm(data = SaladoRecurrence, PeakDischarge ~ log(RecurrenceInterval))
+summary(Salado.RImodel) #log because we saw the data in a graph.
+
+##### New Data ##################################
+
+SaladoRecurrence2 <- 
+  SaladoDischarge %>%
+  filter(Year > 1985) %>%
+  group_by(Year) %>%
+  summarise(PeakDischarge = max(Discharge)) %>% 
+  mutate(Rank = rank(-PeakDischarge), #from 0ne to thirty. the negative gives the direction
+         RecurrenceInterval = (length(Year) + 1)/Rank, 
+         Probability = 1/RecurrenceInterval)
+
+
+
+
+SaladoPeakPlot2 <- 
+  ggplot(SaladoRecurrence2, aes(x = Year, y = PeakDischarge)) +
+         geom_bar(stat = "identity") +
+         xlab("Year")
+print(SaladoPeakPlot2)
+
+Salado2RecurrencePlot <- 
+  ggplot(SaladoRecurrence2, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() #+
+  #scale_x_log10() 
+print(Salado2RecurrencePlot)
+
+Salado2.RImodel <- lm(data = SaladoRecurrence, PeakDischarge ~ log(RecurrenceInterval))
+summary(Salado2.RImodel) 
+
+
+#both graphs ###############################33
+
+SaladoRecurrencePlot.Full <- 
+  ggplot(SaladoRecurrence, aes(x = RecurrenceInterval, y = PeakDischarge)) +
+  geom_point() +
+  geom_point(data = SaladoRecurrence2, color = "#02818a",
+             aes(x = RecurrenceInterval, y = PeakDischarge))
+print(SaladoRecurrencePlot.Full)
+
+
 
 ```
 
