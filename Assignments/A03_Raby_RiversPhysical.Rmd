@@ -68,10 +68,21 @@ summary(MysterySiteDischarge)
 MisteryPlot <- 
   ggplot(MysterySiteDischarge, aes(x = Date, y = Discharge)) +
          geom_line() +
-         xlab("Year")
+         labs(x = "Year", y = expression("Discharge (ft"^3*"/s)"))
+  print(MisteryPlot)
+
+
+#Build a ggplot of discharge over the entire period of record using
+#geom_point to look for missing data.
+
+MisteryPlot <- 
+  ggplot(MysterySiteDischarge, aes(x = Date, y = Discharge)) +
+         geom_point(color = "red", size = 0.5) +
+         labs(x = "Year", y = expression("Discharge (ft"^3*"/s)"))
 print(MisteryPlot)
 
-
+#There is a period of approx. 2 years and 7 months with no data between
+#1990-12-16 and 1993-08-01
 
 ```
 
@@ -139,7 +150,7 @@ MysterySite.Annual.30yr <-
   summarise(PeakDischarge = max(Discharge)) %>% 
   mutate(Rank = rank(-PeakDischarge),
          RecurrenceInterval = (length(Year) + 1)/Rank, 
-         Probability = 1/RecurrenceInterval)
+         Probability = 1/RecurrenceInterval, DataSet = "First 30y Data")
 
 MysterySite.Annual.Full <- 
   MysterySiteDischarge %>%
@@ -147,7 +158,7 @@ MysterySite.Annual.Full <-
   summarise(PeakDischarge = max(Discharge)) %>% 
   mutate(Rank = rank(-PeakDischarge),
          RecurrenceInterval = (length(Year) + 1)/Rank, 
-         Probability = 1/RecurrenceInterval)
+         Probability = 1/RecurrenceInterval, DataSet = "Full Data")
 
 
 #Analize incomplete years
@@ -157,12 +168,13 @@ MysterySite.Annual.Full <-
 #computed from the first 30 years of the record and the other set of points
 #includes the values computed for all years of the record.
 
+MisterySite.Annual.Both <- rbind(MysterySite.Annual.Full, MysterySite.Annual.30yr)
+
 MysterySiteRecurrencePlot.Both <- 
-  ggplot(MysterySite.Annual.30yr, 
-         aes(x = RecurrenceInterval, y = PeakDischarge)) +
-  geom_point() +
-  geom_point(data = MysterySite.Annual.Full, color = "#02818a",
-             aes(x = RecurrenceInterval, y = PeakDischarge))
+  ggplot(MisterySite.Annual.Both, 
+         aes(x = RecurrenceInterval, y = PeakDischarge, color = DataSet)) +
+  geom_point() + 
+  scale_color_brewer(palette = "Set1") 
 print(MysterySiteRecurrencePlot.Both)
 
 #Create a model to predict the discharge for a 100-year flood for both sets of
@@ -194,7 +206,7 @@ MysterySite.Annual.Full.Model$coefficients[1] +
 
 12. How did the recurrence interval plots and predictions of a 100-year flood differ among the two data frames? What does this tell you about the stationarity of discharge in this river?
 
-> Looking at the recurrence interval plot, it can be seen that below 1000 ft3/s the curves are very similar. Above that value data differs considerably. More over, for the prediction of the discharge for a 100-year flood for the model with the first 30 years on record (30yearmodel) we got a discharge value of 5538.257 ft3/s and for the prediction of the discharge for a 100-year flood for the model with full data (fullmodel) we got a discharge value of 4843.717 ft3/s which is approx. a 23% decrease. That difference between prediction is relevant considering that those values could be use for designing flood protection infrastructure or other type of important water infrastructure. This tells me that the assumption of stationary flow regimes in Mystery River is not correct. Recurrence values vary importantly depending on the data selected to do the calculations. 
+> Looking at the recurrence interval plots, it can be seen that below 1000 ft3/s the curves are very similar. Above that value, data differs, having the data of the first 30 years on record (30yearmodel) higher peak discharge values for the same recurrence interval than the full data (fullmodel). More over, for the prediction of the discharge for a 100-year flood for the 30yearmodel we got a discharge value of 5538.257 ft3/s and for the prediction of the discharge for a 100-year flood for the fullmodel we got a discharge value of 4843.717 ft3/s which is approx. a 13% decrease. That difference between predictions is relevant considering that those values could be use for designing flood protection infrastructure or other type of important water infrastructure. This tells me that the assumption of stationary flow regimes in Mystery River is not perfectly correct. Recurrence values vary importantly depending on the data selected to do the calculations specially in data sets that include extreme outliers and periods of missing data.
 
 ## Reflection
 13. What are 2-3 conclusions or summary points about river discharge you learned through your analysis?
