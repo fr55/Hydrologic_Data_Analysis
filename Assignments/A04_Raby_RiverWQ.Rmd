@@ -1,0 +1,231 @@
+---
+title: "Assignment 4: Water Quality in Rivers"
+author: "Student Name"
+output: html_document
+geometry: margin=2.54cm
+editor_options: 
+  chunk_output_type: console
+---
+
+## OVERVIEW
+
+This exercise accompanies the lessons in Hydrologic Data Analysis on water quality in rivers.
+
+## Directions
+1. Change "Student Name" on line 3 (above) with your name.
+3. Work through the steps, **creating code and output** that fulfill each instruction.
+4. Be sure to **answer the questions** in this assignment document.
+6. When you have completed the assignment, **Knit** the text and code into a single HTML file.
+8. After Knitting, submit the completed exercise (HTML file) to the dropbox in Sakai. Add your last name into the file name (e.g., "A04_Chamberlin.html") prior to submission.
+
+The completed exercise is due on 25 September 2019 at 9:00 am.
+
+## Setup
+
+1. Verify your working directory is set to the R project file, 
+2. Load the tidyverse, dataRetrieval, cowplot, xts and dygraphs packages. 
+3. Set your ggplot theme (can be theme_classic or something else)
+
+```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+
+#Verify your working directory is set to the R project file
+getwd()
+
+library(tidyverse)
+library(cowplot)
+library(dataRetrieval)
+library(xts)
+library(dygraphs)
+
+#Set your ggplot theme (can be theme_classic or something else)
+felipe_theme <- theme_light(base_size = 12) +
+  theme(axis.text = element_text(color = "grey8"), 
+        legend.position = "right", plot.title = element_text(hjust = 0.5)) 
+theme_set(felipe_theme)
+
+
+
+```
+
+## Hypoxia
+
+This assignment will look at another measure of water quality - oxygen concentration. Though not directly important for human health, oxygen in the water column is very important for aquatic life, and so is considered a measure of water quality. Hypoxia (low oxygen) has many different definitions. For this assignment, we will use 2 mg/L O~2~ as our cut-off.
+
+
+4. Import the oxygen water quality data from New Hope Creek at Blands (using `readNWISqw()`, site code `02097314`, parameter code `00300`). Make a data frame called `O2.dat` that includes only the Date and O~2~ concentration values. Give your data frame understandable column names.
+
+```{r read_data}
+
+O2.raw <- readNWISqw(siteNumbers = c("02097314"), 
+                     parameterCd = c("00300"), 
+                     startDate = "",
+                     endDate = "")
+
+O2.dat <- O2.raw %>%
+  select(Date = sample_dt,
+         O2_mgL = result_va)
+
+```
+
+5. Create a ggplot of oxygen concentrations over time. Include a horizonal line at 2 mg/l to show the hypoxia cutoff. 
+
+```{r}
+
+O2.plot <- ggplot(O2.dat, aes(x = Date, y = O2_mgL)) +
+  geom_smooth() +
+  geom_point() +
+  geom_hline(yintercept = 2, color = "grey1", alpha = 0.5, lwd = 1, lty = 2) + 
+  labs(y = expression("O2 Concentration (mg/L)")) +
+  geom_text(x = as.Date("1990-06-01"), y = 2.3, label = "hypoxia cutoff", hjust = 1, fontface = "bold") +
+  ggtitle("O2 Concentrations in the New Hope Creek at Blands")
+print(O2.plot)
+
+```
+
+6. What do you notice about the frequency of hypoxia overtime?
+
+> In the period of time of the data, hypoxia was a very common phenomena at the beginning of the studied period. We can see several hypoxia measurements in late summer, beginning of fall periods of years 1983 and 1984. After that there are no more recorded hypoxia events.
+
+## Nutrients
+
+7. Often times hypoxia is associated with high nutrient concentrations, because abundant nutrients promote biomass growth which increases respiration and depletes oxygen concentrations in the water (remember how oxygen concentrations were very low in the hypolimnion from the Physical Properties of Lakes week). Create a new data frame, called `nutrients.dat` with total nitrogen (parameter code `00600`) and total phosphorus (parameter code `00665`) data from the USGS. Your data frame should have 3 columns, `Date`, `TotalNitrogen_mgl-N`, and `TotalPhosphorus_mgl-P`. 
+
+
+```{r read_nutrients}
+
+nutrients.raw <- readNWISqw(siteNumbers = c("02097314"), 
+                     parameterCd = c("00600", "00665"),
+                     startDate = "",
+                     endDate = "")
+
+
+nutrients.dat <- nutrients.raw %>%
+  select(Date = sample_dt,
+         Parameter = parm_cd,
+         Value = result_va)
+
+
+nutrients.dat <- nutrients.raw %>%
+  select(Date = sample_dt, 
+         Parameter = parm_cd, 
+         Value = result_va) %>%
+  group_by(Date, Parameter) %>%
+  summarize(Value = mean(Value)) %>%
+  spread(key = Parameter, value = Value) %>%
+  rename(`TotalNitrogen_mgl-N` = '00600',
+         `TotalPhosphorus_mgl-P` = '00665')
+
+
+
+```
+
+8. Create two ggplots stacked with cowplot that show nutrient concentrations over time.
+
+```{r nutrient.plots)}
+
+
+Nitrogen.plot <- ggplot(nutrients.dat, aes(x = Date)) +
+  geom_line(aes(y = `TotalNitrogen_mgl-N`), color = "blue", show.legend = FALSE) +
+  #lims(x = c(1982-12-15, 2018-09-15)) +
+  labs(x = "", y = expression("Total Nitrogen mg/l")) 
+
+
+Phosphorus.plot <- ggplot(nutrients.dat, aes(x = Date)) +
+  geom_line(aes(y = `TotalPhosphorus_mgl-P`), color = "red", show.legend = FALSE) +
+  #lims(x = c(1982-12-15, 2018-09-15)) +
+  labs(x = "", y = expression("Total Phosphorus mg/l")) 
+
+
+TempProfilesAll <- 
+  plot_grid(Nitrogen.plot, Phosphorus.plot,
+            ncol = 1)
+print(TempProfilesAll)
+
+
+```
+
+9. What do these plots tell you about nutrient concentrations over time? How might this relate to your previous plot of hypoxia events?
+
+> Concentrations of Nitrogen and Phosphorus were relatively high and very variable at the beginning of the recorded period (approx. 1982 to 1985), which coincides with the recorded hypoxia events. After 1985 total N and P appear to have stabilized at lower values, which probably caused that no hypoxia events have been recorded in New Hope Creek after 1985. Hypoxia is one of the effects of high nutrient (N and P) concentration in water.
+
+## Discharge and Temperature
+
+10. Turbulent flow in rivers mixes oxygen into the water column. As discharge decreases, water moves slower, and oxygen diffuses slower into the water from the atmosphere. Download and reformat the daily discharge data for New Hope Creek (function `readNWISdv()`, site `02097314`, parameter `00060`). 
+
+```{r bring_discharge}
+
+
+
+dischargeHW.raw <- readNWISdv(siteNumbers = c("02097314"), 
+                     parameterCd = c("00060"),
+                     startDate = "",
+                     endDate = "")
+
+names(dischargeHW.raw)[4:5] <- c("New.Hope.Creek.Discharge", "New.Hope.Creek.Approval.Code")
+
+
+
+
+
+```
+
+11. Create a dygraph of discharge and oxygen concentrations. You should have discharge on the y axis and oxygen concentration on the y2 axis. Set your y-axes limits so that they don't change as you zoom in and out. (hint: use `dyAxis(..., valueRange = c(0, 6500))` for discharge & `dyAxis(..., valueRange = c(0, 13))` for oxygen).
+```{r}
+# discharge and oxygen concentrations
+# discharge on the y axis
+# oxygen concentration on the y2 axis
+# Set your y-axes limits so that they don't change as you zoom in and out. (hint: use `dyAxis(..., valueRange = c(0, 6500))` for discharge & `dyAxis(..., valueRange = c(0, 13))` for oxygen).
+
+O2.Concentration <- with(O2.dat, xts(x = O2_mgL, order.by = Date))
+Discharge <- with(dischargeHW.raw, xts(x = New.Hope.Creek.Discharge, order.by = Date))
+
+colnames(O2.dat)
+
+DyDat <- cbind(O2.Concentration, Discharge)
+
+dygraph(DyDat) %>% 
+  dySeries("O2.Concentration", axis = "y2") %>% 
+  dyAxis(name = "y", label = "Discharge (cfs)", valueRange = c(0, 6500)) %>%
+  dyAxis(name = "y2", label = "O2 Concentration (mg/L)", valueRange = c(0, 13)) %>%
+  dyRangeSelector()
+
+dygraph(DyDat) %>% 
+  dySeries("O2.Concentration", axis = "y2") %>% 
+  dyAxis(name = "y", label = "Discharge (cfs)", valueRange = c(0, 200)) %>%
+  dyAxis(name = "y2", label = "O2 Concentration (mg/L)", valueRange = c(0, 4)) %>%
+  dyRangeSelector()
+
+
+
+```
+
+12. Do hypoxic events happen in the wet or the dry season? How many days after storm events (of at least 100 cfs) do they occur? 
+
+> In this dataset, Hypoxic events occured in the dry season (August, September, October), in periods where discharges are ussually not higher that 50 cfs. In 1983 the first hypoxia event happened approx. 70 days after a storm events of at least 100 cfs (97 cfs to be precise). In 1984 the first hypoxia event happened approx. 40 days after a storm events of at least 100 cfs. These observation is probably related with the fact that moving water tends to contain more dissolved oxygen than stagnant water or water moving slower.
+
+13. Temperature also impacts the solubility of oxygen in water. More oxygen can dissolve when temperatures are *lower*. How would you analyze the effects of temperature on dissolved oxygen concentrations? What data would you need? How would you separate the effects of temperature from the effects of flow?
+
+> I would see what water temperature data is available, at different depths if possible, and compare it also with O2 concentration in water. To separate the effects of temperature and flow one option is to compare DO data with same flow values for different temperature values. In that way you could see what difference is the temperature making in the DO. It would be useful to have air temperature and water temperature and DO values at different depths (depending on the size of the river).
+
+14. What do you think is the biggest driver of hypoxia in New Hope Creek? What data do you use to support your conclusion?
+
+> In the analyzed data it can be seen that flow, and nutrients (and probably temperature) have an impact in DO, but considering just hypoxia I think is clear from the total Nitrogen and Phosphorus plots that these nutrients are a big driver of hypoxia in New Hope Creek. Once these values stabilized after 1984-1985 there were no more hypoxia events recorded.
+
+## Reflection
+15. What are 2-3 conclusions or summary points about river water quality you learned through your analysis?
+
+> Conclusion 1: Nutrients (P and N) have a huge impact on DO and hypoxia conditions.
+> Conclusion 2: FLow also has an impact in DO levels. Nevertheless, some parameters changes or variability such as flow also coincide with the variations in other parameters such as Temperature (in this case lower flows in high temperature seasons), so that phenomenon should be considered in the analysis and hopefully be able to study the explanatory variables separately.
+
+16. What data, visualizations, and/or models supported your conclusions from 15?
+
+> My conclusion were fundamentally based on the amazing plots that we had to make for this lab. DO, Nutrients and Discharge vs Time. 
+
+17. Did hands-on data analysis impact your learning about water quality relative to a theory-based lesson? If so, how?
+
+> It definitely impacted my learning. Is so different to see relationships between parameters written on a paper or on a blackboard than to be able to make your one graphs with real data and come up with those conclusions by yourself. 
+
+18.	How did the real-world data compare with your expectations from theory?
+
+> The New Hope Creek data set actually fits perfectly to what one would have expected from theory. No more hypoxia events after nutrients were controlled in some way. I will now do some research on what happened in that creek in 1984/1985. 
