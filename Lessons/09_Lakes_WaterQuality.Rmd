@@ -16,6 +16,14 @@ editor_options:
 ## Opening Discussion
 What are the major water quality impairments experienced in lakes?  
 
+> Toxins. Smell, color. Things harmfull to humans of aquatic life.
+DO
+Nutrients (N, P, Trace nutrients)
+Microbes
+Odor/Color
+Invasive species
+Contaminants
+
 ## Session Set Up
 
 ```{r}
@@ -27,10 +35,10 @@ library(lubridate)
 library(LAGOSNE)
 
 theme_set(theme_classic())
-options(scipen = 100)
+options(scipen = 100) # Prevents scientific notation.
 
 lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
-
+# you only need this once. Didnt work. We have a back up. 
 ```
 
 ## Getting to know the LAGOSNE database
@@ -44,19 +52,19 @@ https://github.com/cont-limno/LAGOSNE
 https://cont-limno.github.io/LAGOSNE/articles/lagosne_structure.html
 
 ```{r}
-# Load LAGOSNE data into R session
+# Load LAGOSNE data into R session #FRA: didnt work because the up thing didnt work.
 LAGOSdata <- lagosne_load()
 names(LAGOSdata)
 
 # If the package installation and data download has not worked, use this code: 
-# load(file = "./Data/Raw/LAGOSdata.rda")
+#load(file = "./Data/Raw/LAGOSdata.rda") #FRA: we ran this because the official way didnt work.
 
 # Exploring the data types that are available
 LAGOSlocus <- LAGOSdata$locus
 LAGOSstate <- LAGOSdata$state
 LAGOSnutrient <- LAGOSdata$epi_nutr
 
-# Tell R to treat lakeid as a factor, not a numeric value
+# Tell R to treat lakeid as a factor, not a numeric value FRA:so we dont have problems
 LAGOSlocus$lagoslakeid <- as.factor(LAGOSlocus$lagoslakeid)
 LAGOSnutrient$lagoslakeid <- as.factor(LAGOSnutrient$lagoslakeid)
 ```
@@ -72,7 +80,7 @@ Add notes about each line of code as we go along. What does each function do?
 # Join data frames
 LAGOSlocations <- left_join(LAGOSlocus, LAGOSstate, by = "state_zoneid")
 
-# Order by number of lakes
+# Order by number of lakes FRA: for bar plots.
 LAGOSlocations <- 
   within(LAGOSlocations, 
          state <- factor(state, levels = names(sort(table(state), decreasing=TRUE))))
@@ -86,10 +94,15 @@ print(LakeCounts)
 ## Trophic state as a metric for water quality
 Robert Carlson's 1977 paper, "A trophic state index for lakes," established the first numeric categorization system for a lake's **trophic state**, the amount of biomass a given system can sustain. Trophic state is a useful water quality metric, as it can give insight into the propensity of a system to develop algal blooms, the degree of nutrient loading in the system, and a range of other potential water quality concerns experienced by other lakes with a similar trophic state (e.g., hypoxia).
 
+FRA: It can be a proxy to other parameters. (hyperuttophic) looking for changes in trophic states can be an indicatr or other things
+
 To calculate the **Trophic State Index**, three variables can be used. Note these should not be used to define trophic state but as indicators of the broader condition. Comparing these values in a given lake can give insight into the broader mechanisms at play.
 
 * *chlorophyll a concentration*, a proxy for algal (phytoplankton) biomass. Pros: direct measure of primary productivity
 * *Secchi disk transparency*, a measure of water clarity. Pros: simple and cheap. Cons: may yield a high TSI in highly colored lakes and in lakes where particulate matter is comprised of non-algal material 
+organic matter (Tea)
+algae
+disolved solids 
 * *Total phosphorus (TP)*, a nutrient essential for growth of primary producers. Assumptions: phosphorus is the limiting nutrient for phytoplankton growth (this assumption often holds only for summer months)
 
 $TSI(Chl) = 10(6 - (2.04 - 0.68 ln Chl/ln 2))$
@@ -115,10 +128,12 @@ LAGOStrophic <-
          gnis_name, lake_area_ha, state, state_name) %>%
   mutate(sampleyear = year(sampledate), 
          samplemonth = month(sampledate), 
-         season = as.factor(quarter(sampledate, fiscal_start = 12))) %>%
+         season = as.factor(quarter(sampledate, fiscal_start = 12))) #month 12.  Winter is going to be 1. including december. Kateri made the decision. You can break your seasonality the way it make sense to you.
+%>%
   drop_na(chla:secchi)
 
-levels(LAGOStrophic$season) <- c("Winter", "Spring", "Summer", "Fall")
+levels(LAGOStrophic$season) <- c("Winter", "Spring", "Summer", "Fall") #we name the numbers of the quarters.
+#the data is smaller because is only where we have all three parameter information.
 ```
 
 Let's look at observations of chl, secchi depth, and TP seasonally and over the period of study.
@@ -131,6 +146,8 @@ ggplot(LAGOStrophic,
   scale_color_viridis_c(option = "magma")
 print(chlbymonth)
 
+#more measurements on summer. high cloro on summer beacuse more light. More data from recent years. winter motnhs no data from recent years. Looks like we did more studies in winte rmotnhs before.
+
 secchibymonth <-
 ggplot(LAGOStrophic, 
        aes(x = as.factor(samplemonth), y = secchi, color = sampleyear)) +
@@ -139,6 +156,8 @@ ggplot(LAGOStrophic,
   scale_color_viridis_c(option = "magma")
 print(secchibymonth)
 
+#also change in meas. freacuency. also recently only summer. Sechi is oposite of clorophil
+
 tpbymonth <- 
 ggplot(LAGOStrophic, 
        aes(x = as.factor(samplemonth), y = tp, color = sampleyear)) +
@@ -146,6 +165,10 @@ ggplot(LAGOStrophic,
   labs(x = "Month", y = expression(Total ~ P ~ (mu*g / L)), color = "Year") +
   scale_color_viridis_c(option = "inferno")
 print(tpbymonth)
+
+#phospate is the readily available (disolved)
+
+# you have to look at an specific lake. the relationship between 
 ```
 
 What do you notice about the seasonality of these variables? If we were to characterize a lake based on the value of a given variable, how might seasonality affect our interpretations?
@@ -163,7 +186,11 @@ LAGOStrophic <-
          trophic.class = 
             ifelse(TSI.chl < 40, "Oligotrophic", 
                    ifelse(TSI.chl < 50, "Mesotrophic",
-                          ifelse(TSI.chl < 70, "Eutrophic", "Hypereutrophic"))))
+                          ifelse(TSI.chl < 70, "Eutrophic", "Hypereutrophic"))))  #rounds to without decimals becuase they dont meana anything
+
+# they should be the same three numbers. Sometimes the result comflict. Using more than one parameters is sometimes not the best solution. Here we use the category Clorophyl to categorize. Sechi has human error. Of the three is the more direct method of what we are measuring. 
+
+#Up to here 9 - 25 - 2019
 
 LAGOStrophic$trophic.class <- 
   factor(LAGOStrophic$trophic.class,
