@@ -37,7 +37,7 @@ library(LAGOSNE)
 theme_set(theme_classic())
 options(scipen = 100) # Prevents scientific notation.
 
-lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
+# lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
 # you only need this once. Didnt work. We have a back up. 
 ```
 
@@ -57,7 +57,7 @@ LAGOSdata <- lagosne_load()
 names(LAGOSdata)
 
 # If the package installation and data download has not worked, use this code: 
-#load(file = "./Data/Raw/LAGOSdata.rda") #FRA: we ran this because the official way didnt work.
+load(file = "./Data/Raw/LAGOSdata.rda") #FRA: we ran this because the official way didnt work.
 
 # Exploring the data types that are available
 LAGOSlocus <- LAGOSdata$locus
@@ -128,9 +128,9 @@ LAGOStrophic <-
          gnis_name, lake_area_ha, state, state_name) %>%
   mutate(sampleyear = year(sampledate), 
          samplemonth = month(sampledate), 
-         season = as.factor(quarter(sampledate, fiscal_start = 12))) #month 12.  Winter is going to be 1. including december. Kateri made the decision. You can break your seasonality the way it make sense to you.
-%>%
-  drop_na(chla:secchi)
+         season = as.factor(quarter(sampledate, fiscal_start = 12))) %>%
+  drop_na(chla:secchi) #month 12.  Winter is going to be 1. including december. Kateri made the decision. You can break your seasonality the way it make sense to you.
+
 
 levels(LAGOStrophic$season) <- c("Winter", "Spring", "Summer", "Fall") #we name the numbers of the quarters.
 #the data is smaller because is only where we have all three parameter information.
@@ -214,12 +214,16 @@ chlvssecchi <- ggplot(LAGOStrophic, aes(x = TSI.chl, y = TSI.secchi)) +
   geom_abline(slope = 1, intercept = 0) 
 print(chlvssecchi)
   
+# we see more points below the line. Clorophil give us a higher degree of heutrophic state than Sechi
+
 chlvstp <- ggplot(LAGOStrophic, aes(x = TSI.chl, y = TSI.tp)) +
   geom_point(alpha = 0.1, color = "#ec6163ff") + 
   scale_y_continuous(limits = c(0, 100)) +
   scale_x_continuous(limits = c(0, 100)) +
   geom_abline(slope = 1, intercept = 0)  
 print(chlvstp)
+
+#Similar relationship. So P give us lower values than Chlorofil. Bif diff in categorization. In those cases Clorofil are much higher that we would expect based on total p concentration.
 ```
 
 What is the observed relationship, and how does it depart from the 1:1 relationship? What do values above or below the 1:1 line tell us about the conditions present in a lake?
@@ -239,6 +243,11 @@ stateTSIbar <- ggplot(LAGOStrophic, aes(x = state, fill = trophic.class)) +
   labs(x = "", y = "Number of Observations", fill = "Trophic Class") +
   scale_fill_viridis_d(option = "magma", begin = 0.2, end = 0.8, direction = -1)
 print(stateTSIbar)
+
+
+#Violin give us good distribution information. 
+
+#The rectangle represent the diff trophic states.(19 is 17 states plus Na plus some space), The horizontal lines are an alternative to the rectangles.
   
 stateTSIjitter <- ggplot(LAGOStrophic, aes(x = state, y = TSI.chl, color = season)) +
   geom_rect(xmin = -1, xmax = 19, ymin = 0, ymax = 40,
@@ -259,6 +268,8 @@ stateTSIjitter <- ggplot(LAGOStrophic, aes(x = state, y = TSI.chl, color = seaso
   scale_color_viridis_d(option = "magma")
 print(stateTSIjitter)
 
+#keep an eye on seasonality. Indiana only monitors in the summer. Some states more mixed value. Is important the base line. Importnat hohw we see things are moving or changing. Some are eutrophic per se. 
+
 ```
 What insights do we gain from the different visualizations?
 
@@ -270,3 +281,11 @@ What insights do we gain from the different visualizations?
 
 ## Closing Discussion
 What factors might you expect to influence TSI scores in a given area? What are some variables in the LAGOSNE database that could help you test your hypothesis?
+
+
+#Save the Lagos Trophic as CSV
+
+
+```{r}
+write.csv(LAGOStrophic, "./Data/Processed/LAGOStrophic.csv", row.names = FALSE)
+```
