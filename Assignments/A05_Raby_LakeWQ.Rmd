@@ -15,7 +15,7 @@ This exercise accompanies the lessons in Hydrologic Data Analysis on water quali
 1. Change "Student Name" on line 3 (above) with your name.
 3. Work through the steps, **creating code and output** that fulfill each instruction.
 4. Be sure to **answer the questions** in this assignment document.
-6. When you have completed the assignment, **Knit** the text and code into a single HTML file.
+6. When you have completed the assignment, **Knit** the text and code into a single pdf file.
 8. After Knitting, submit the completed exercise (HTML file) to the dropbox in Sakai. Add your last name into the file name (e.g., "A05_Salk.html") prior to submission.
 
 The completed exercise is due on 2 October 2019 at 9:00 am.
@@ -28,7 +28,28 @@ The completed exercise is due on 2 October 2019 at 9:00 am.
 4. Load the LAGOSdata database and the trophic state index csv file we created on 2019/09/27.
 
 ```{r setup}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
+#Verify your working directory is set to the R project file
+getwd()
+
+library(tidyverse)
+library(cowplot)
+library(LAGOSNE)
+library(janitor)
+library(lubridate)
+
+
+#Set your ggplot theme (can be theme_classic or something else)
+felipe_theme <- theme_light(base_size = 12) +
+  theme(axis.text = element_text(color = "grey8"), 
+        legend.position = "right", plot.title = element_text(hjust = 0.5)) 
+theme_set(felipe_theme)
+
+
+#Load the LAGOSdata database and the trophic state index csv file we created on 2019/09/27.
+load(file = "./Data/Raw/LAGOSdata.rda")
+LAGOStrophic <- read.csv("./Data/Processed/LAGOStrophic.csv")
 ```
 
 ## Trophic State Index
@@ -36,25 +57,129 @@ The completed exercise is due on 2 October 2019 at 9:00 am.
 5. Similar to the trophic.class column we created in class (determined from TSI.chl values), create two additional columns in the data frame that determine trophic class from TSI.secchi and TSI.tp (call these trophic.class.secchi and trophic.class.tp). 
 
 ```{r}
+LAGOStrophicComplete <- 
+  mutate(LAGOStrophic, 
+         trophic.class.secchi = 
+            ifelse(TSI.secchi < 40, "Oligotrophic", 
+                   ifelse(TSI.secchi < 50, "Mesotrophic",
+                          ifelse(TSI.secchi < 70, "Eutrophic", "Hypereutrophic")))) 
 
+
+LAGOStrophicComplete$trophic.class.secchi <- 
+  factor(LAGOStrophicComplete$trophic.class.secchi,
+         levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
+
+LAGOStrophicComplete <- 
+  mutate(LAGOStrophicComplete, 
+         trophic.class.tp = 
+            ifelse(TSI.tp < 40, "Oligotrophic", 
+                   ifelse(TSI.tp < 50, "Mesotrophic",
+                          ifelse(TSI.tp < 70, "Eutrophic", "Hypereutrophic")))) 
+
+LAGOStrophicComplete$trophic.class.tp <- 
+  factor(LAGOStrophicComplete$trophic.class.tp,
+         levels = c("Oligotrophic", "Mesotrophic", "Eutrophic", "Hypereutrophic"))
+
+head(LAGOStrophicComplete)
 ```
 
 
 6. How many observations fall into the four trophic state categories for the three metrics (trophic.class, trophic.class.secchi, trophic.class.tp)? Hint: `count` function.
 
 ```{r}
+#Number of observations that fall into the four trophic state categories for trophic.class
+#(using chlorophyll a concentration)
 
+N_Obs_TrophicClass_Chl <- data.frame(summary(LAGOStrophicComplete$trophic.class))
+names(N_Obs_TrophicClass_Chl)[1] <- c("Number_Observations")
+N_Obs_TrophicClass_Chl <- data.frame(TrophicState = rownames(N_Obs_TrophicClass_Chl),
+                                     N_Obs_TrophicClass_Chl)
+rownames(N_Obs_TrophicClass_Chl) <- c()
+N_Obs_TrophicClass_Chl <- adorn_totals(N_Obs_TrophicClass_Chl,"row")
+
+#The number of observations are presented in the following dataframe
+N_Obs_TrophicClass_Chl
+
+#Number of observations that fall into the four trophic state categories for 
+#trophic.class.secchi (using Secchi Depth)
+
+N_Obs_TrophicClass_Secchi <- data.frame(summary(LAGOStrophicComplete$trophic.class.secchi))
+names(N_Obs_TrophicClass_Secchi)[1] <- c("Number_Observations")
+N_Obs_TrophicClass_Secchi <- 
+  data.frame(TrophicState = rownames(N_Obs_TrophicClass_Secchi),
+             N_Obs_TrophicClass_Secchi)
+rownames(N_Obs_TrophicClass_Secchi) <- c()
+N_Obs_TrophicClass_Secchi <- adorn_totals(N_Obs_TrophicClass_Secchi,"row")
+
+#The number of observations are presented in the following dataframe
+N_Obs_TrophicClass_Secchi
+
+#Number of observations that fall into the four trophic state categories for 
+#trophic.class.tp (using Total phosphorus)
+
+N_Obs_TrophicClass_tp <- data.frame(summary(LAGOStrophicComplete$trophic.class.tp))
+names(N_Obs_TrophicClass_tp)[1] <- c("Number_Observations")
+N_Obs_TrophicClass_tp <- data.frame(TrophicState = rownames(N_Obs_TrophicClass_tp),
+                                    N_Obs_TrophicClass_tp)
+rownames(N_Obs_TrophicClass_tp) <- c()
+N_Obs_TrophicClass_tp <- adorn_totals(N_Obs_TrophicClass_tp,"row")
+
+#The number of observations are presented in the following dataframe
+N_Obs_TrophicClass_tp
 ```
 
-7. Find and quantify instances where trophic.class and trophic.class.secchi differ. Do the same comparing trophic.class and trophic.class.tp. 
+7. What proportion of total observations are considered eutrophic or hypereutrophic according to the three different metrics (trophic.class, trophic.class.secchi, trophic.class.tp)?
 
 ```{r}
+#proportion of total observations of the four trophic state categories for 
+#chlorophyll a concentration metric
+
+N_Obs_TrophicClass_Chl <- 
+  mutate(N_Obs_TrophicClass_Chl, 
+         Proportion = N_Obs_TrophicClass_Chl$Number_Observations/N_Obs_TrophicClass_Chl[5,2])
+
+#The proportion of observations is presented in the folowing dataframe             
+N_Obs_TrophicClass_Chl
+
 
 ```
 
-What proportion of observations do these metrics differ?
+>20.6% + 4.4% = 25% of total observations are considered eutrophic or hypereutrophic for chlorophyll a concentration metric
 
-> 
+```{r}
+#proportion of total observations of the four trophic state categories for Secchi Depth metric
+
+N_Obs_TrophicClass_Secchi <- 
+  mutate(N_Obs_TrophicClass_Secchi, 
+         Proportion = N_Obs_TrophicClass_Secchi$Number_Observations/N_Obs_TrophicClass_Secchi[5,2])
+
+#The proportion of observations is presented in the folowing dataframe               
+N_Obs_TrophicClass_Secchi
+
+
+```
+
+>38.2% + 6.8% = 45% of total observations are considered eutrophic or hypereutrophic for Secchi Depth metric
+
+```{r}
+#proportion of total observations of the four trophic state categories for Total phosphorus metric
+
+N_Obs_TrophicClass_tp <- 
+  mutate(N_Obs_TrophicClass_tp, 
+         Proportion = N_Obs_TrophicClass_tp$Number_Observations/N_Obs_TrophicClass_tp[5,2])
+
+#The proportion of observations is presented in the folowing dataframe               
+N_Obs_TrophicClass_tp
+
+
+
+```
+
+>33.1% + 9.6% = 42.7% of total observations are considered eutrophic or hypereutrophic for Total phosphorus metric
+
+Which of these metrics is most conservative in its designation of eutrophic conditions? Why might this be?
+
+> With 45% of total observations considered euthrophic or hypereutrophic compared to 25% and 42.7%, the Secchi Depth metric is the most conservative. It is probably because is the least accurate estimation. I measures water transparency to indirectly give an estimation of concentration of suspended and dissolved material in the water, which then is used to derive the biomass. In some cases water transparency could be altered not only by biomass, which would lead to overestimation of biomass by the Secchi disk metric and therefore overestimation of the trophic state.
 
 Note: To take this further, a researcher might determine which trophic classes are susceptible to being differently categorized by the different metrics and whether certain metrics are prone to categorizing trophic class as more or less eutrophic. This would entail more complex code.
 
@@ -64,69 +189,238 @@ Note: To take this further, a researcher might determine which trophic classes a
 
 ```{r}
 
+LAGOSlocus <- LAGOSdata$locus
+LAGOSstate <- LAGOSdata$state
+LAGOSnutrient <- LAGOSdata$epi_nutr
+
+
+# Tell R to treat lakeid as a factor, not a numeric value
+LAGOSlocus$lagoslakeid <- as.factor(LAGOSlocus$lagoslakeid)
+LAGOSnutrient$lagoslakeid <- as.factor(LAGOSnutrient$lagoslakeid)
+
+# Join data frames
+LAGOSlocations <- left_join(LAGOSlocus, LAGOSstate, by = "state_zoneid")
+LAGOSNandP <- left_join(LAGOSnutrient, LAGOSlocations, by = "lagoslakeid")
+
+
+LAGOSNandP <- 
+  LAGOSNandP %>%
+  select(lagoslakeid, sampledate, tn, tp, state, state_name) %>%
+  mutate(sampleyear = year(sampledate), 
+         samplemonth = month(sampledate))
+
+head(LAGOSNandP)
+
 ```
 
 9. Create two violin plots comparing TN and TP concentrations across states. Include a 50th percentile line inside the violins.
 ```{r}
+LAGOSN <- 
+  LAGOSNandP %>%
+  drop_na(tn,state)
+
+LAGOSP <- 
+  LAGOSNandP %>%
+  drop_na(tp,state)
+
+
+LAGOSNviolin <- ggplot(LAGOSN, aes(x =state, fill =state)) +
+  geom_violin(aes(y = tn), draw_quantiles = 0.50) + 
+  scale_fill_manual(values = c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", 
+                               "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#777711", 
+                               "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", 
+                               "#771122", "#AA4455")) +
+  xlab("State") +
+  ylab(Total ~ N ~ (mu*g / L)) +
+  ggtitle("Total Nitrogen per State")
+print(LAGOSNviolin)
+
+LAGOSPviolin <- ggplot(LAGOSP, aes(x =state, fill = state)) +
+  geom_violin(aes(y = tp), draw_quantiles = 0.50) +
+    scale_fill_manual(values = c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", 
+                                 "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#777711", 
+                                 "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", 
+                                 "#771122", "#AA4455")) +
+  xlab("State") +
+  ylab(Total ~ P ~ (mu*g / L)) +
+  ggtitle("Total Phosphorus per State")
+print(LAGOSPviolin)
+
+# To better see the median, I scaled the y axis
+
+LAGOSNviolin2 <- ggplot(LAGOSN, aes(x =state, fill =state)) +
+  geom_violin(aes(y = tn), draw_quantiles = 0.50) + 
+  ylim(0,2500) +
+  scale_fill_manual(values = c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", 
+                               "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#777711", 
+                               "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", 
+                               "#771122", "#AA4455")) +
+  xlab("State") +
+  ylab(Total ~ N ~ (mu*g / L)) +
+  ggtitle("Total Nitrogen per State (y axis 0 - 2500ug/L)")
+print(LAGOSNviolin2)
+
+LAGOSPviolin2 <- ggplot(LAGOSP, aes(x =state, fill = state)) +
+  geom_violin(aes(y = tp), draw_quantiles = 0.50) +
+  ylim(0,125) +
+    scale_fill_manual(values = c("#771155", "#AA4488", "#CC99BB", "#114477", "#4477AA", 
+                                 "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#777711", 
+                                 "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", 
+                                 "#771122", "#AA4455")) +
+  xlab("State") +
+  ylab(Total ~ P ~ (mu*g / L)) +
+  ggtitle("Total Phosphorus per State (y axis 0 - 125ug/L)")
+print(LAGOSPviolin2)
+
+#To be sure about the next questions
+
+LAGOSN_Summary <- LAGOSN %>%
+  group_by(state_name) %>%
+  summarize(tN_Median = median(tn),
+            tN_Range = max(tn) - min(tn)) 
+
+LAGOSN_Summary
+
+
+LAGOSP_Summary <- LAGOSP %>%
+  group_by(state_name) %>%
+  summarize(tP_Median = median(tp),
+            tP_Range = max(tp) - min(tp)) 
+
+LAGOSP_Summary
 
 ```
 
 Which states have the highest and lowest median concentrations?
 
-> TN:
+> TN: Highest: Iowa. Lowest: Vermont. I couldn't figure out why the Total N plot shows a higher median for Vermont (over 250 ug/L)
 
-> TP:
+> TP: Highest: Illinois. Lowest: New Hampshire.
 
 Which states have the highest and lowest concentration ranges?
 
-> TN: 
+> TN: Highest: Iowa. Lowest: Vermont
 
-> TP: 
+> TP: Highest: Illinois. Lowest: Connecticut
 
 10. Create two jitter plots comparing TN and TP concentrations across states, with samplemonth as the color. Choose a color palette other than the ggplot default.
 
 ```{r}
+tnbystate <- 
+ggplot(LAGOSN, 
+       aes(x = as.factor(state_name), y = tn, color = samplemonth)) +
+  geom_jitter(alpha = 0.2) +
+  labs(x = "States", y = expression(Total ~ N ~ (mu*g / L)), color = "Month") +
+  scale_color_viridis_c(option = "plasma") +
+  theme(axis.text.x = element_text(angle = 90))
+print(tnbystate)
+
+tpbystate <- 
+ggplot(LAGOSP, 
+       aes(x = as.factor(state_name), y = tp, color = samplemonth)) +
+  geom_jitter(alpha = 0.2) +
+  labs(x = "States", y = expression(Total ~ P ~ (mu*g / L)), color = "Month") +
+  scale_color_viridis_c(option = "plasma") +
+  theme(axis.text.x = element_text(angle = 90))
+print(tpbystate)
+
+LAGOSN_Summary2 <- LAGOSN %>%
+  group_by(state_name) %>%
+  summarize(tN_Samples = length(tn)) 
+
+LAGOSN_Summary2
+
+LAGOSP_Summary2 <- LAGOSP %>%
+  group_by(state_name) %>%
+  summarize(tP_Samples = length(tp)) 
+
+LAGOSP_Summary2
+
+LAGOSN_Summary3 <- LAGOSN %>%
+  group_by(samplemonth) %>%
+  summarize(tN_Samples = length(tn)) 
+
+LAGOSN_Summary3
+
+LAGOSP_Summary3 <- LAGOSP %>%
+  group_by(samplemonth) %>%
+  summarize(tP_Samples = length(tp)) 
+
+LAGOSP_Summary3
 
 ```
 
 Which states have the most samples? How might this have impacted total ranges from #9?
 
-> TN:
+> TN: Missouri 11.503, Minnesota 8604, and New York 8.091
 
-> TP: 
+> TP: Wisconsin 45.743 and New York 21.343
+
+> Number of samples totally could impact the total ranges of samples because a higher number of samples probably means that the samples were taken at different seasons, times, environmental conditions, and for a longer period of time  (which makes more probable the presence of outliers) than data sets with fewer samples.
 
 Which months are sampled most extensively? Does this differ among states?
 
-> TN:
+> TN: July, August, and June in decreasing order. According to the jitter plot, it differ among states. For example it can be seen that Iowa has more red/pink/purple values (summer months) and New York, Maine, and Rhode Island have a greater concentrations of yellow/orange values (fall months).
 
-> TP: 
+> TP: August, July, and June in decreasing order. According to the jitter plot, it differ among states. For example it can be seen that Michigan, Vermont and Wisconsin have more blue/purple values (winter months) than the rest of the states. New York, Massachusetts, and Rhode Island have a greater concentrations of yellow/orange values (fall months).
 
 11. Create two jitter plots comparing TN and TP concentrations across states, with sampleyear as the color. Choose a color palette other than the ggplot default.
 
 ```{r}
+tnbystate <- 
+ggplot(LAGOSN, 
+       aes(x = as.factor(state_name), y = tn, color = sampleyear)) +
+  geom_jitter(alpha = 0.2) +
+  labs(x = "States", y = expression(Total ~ N ~ (mu*g / L)), color = "Year") +
+  scale_color_viridis_c(option = "plasma") +
+  theme(axis.text.x = element_text(angle = 90))
+print(tnbystate)
+
+tpbystate <- 
+ggplot(LAGOSP, 
+       aes(x = as.factor(state_name), y = tp, color = sampleyear)) +
+  geom_jitter(alpha = 0.2) +
+  labs(x = "States", y = expression(Total ~ P ~ (mu*g / L)), color = "Year") +
+  scale_color_viridis_c(option = "plasma") +
+  theme(axis.text.x = element_text(angle = 90))
+print(tpbystate)
+
+LAGOSN_Summary4 <- LAGOSN %>%
+  group_by(sampleyear) %>%
+  summarize(tN_Samples = length(tn)) 
+
+tail(LAGOSN_Summary4, n=15)
+
+LAGOSP_Summary4 <- LAGOSP %>%
+  group_by(sampleyear) %>%
+  summarize(tP_Samples = length(tp)) 
+
+tail(LAGOSP_Summary4, n=15)
 
 ```
 
 
 Which years are sampled most extensively? Does this differ among states?
 
-> TN:
+> TN: From 2005 to 2010. According to the jitter plot it does not differ much among states. They all seem to have greater concentration of yellow values. Some states such as Wisconsin, Connecticut, and Rhode Island have values more orange, pink, or even purple, meaning that they have more concentration of values from the 1990s, 1980s, and 1970s.
 
-> TP: 
+> TP: From 2004 to 2010. According to the jitter plot it does differ among states, at least more that the TN plot. There are more "yellow" states (2000s) such as Iowa or Ohio and more "red/orange" states (1990s) like Minnesota or Maine.
 
 ## Reflection
 12. What are 2-3 conclusions or summary points about lake water quality you learned through your analysis?
 
->
+> 1. The trophic state can be calculated using chlorophyll a concentration, Secchi disk transparency, and Total phosphorus (TP). 
+> 2. The results obtained by each one of the variables can be different. chlorophyll a concentration would probably be the most accurate, but Secchi disk is an affordable measurement that can be used as a easy first estimation of the trophic state.
+> 3. The number of measurements and values of TP and TN can vary considerably between states
 
 13. What data, visualizations, and/or models supported your conclusions from 12?
 
-> 
+> For 1. and 2. Calculation of trophic state using the three variables. For 3. all the jitter and violin plots.
 
 14. Did hands-on data analysis impact your learning about water quality relative to a theory-based lesson? If so, how?
 
->
+> It did. I like how hands-on makes you have doubts that you have to do research by yourself to solve them, compared to a theory-based lesson were the professor gives you all the answers in class.
 
 15.	How did the real-world data compare with your expectations from theory?
 
->
+> I didn't have much previous knowledge about the topic so I didn't know what to expect. The LAGOS data looks amazing.
