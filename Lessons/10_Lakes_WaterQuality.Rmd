@@ -65,11 +65,20 @@ LAGOSlocus <- LAGOSdata$locus
 LAGOSstate <- LAGOSdata$state
 LAGOSnutrient <- LAGOSdata$epi_nutr
 LAGOS.lulc <- LAGOSdata$buffer500m.lulc
-LAGOS.chag <- LAGOSdata$huc8.chag
+LAGOS.chag <- LAGOSdata$hu8.chag
 
 # Tell R to treat lakeid as a factor, not a numeric value FRA:so we dont have problems
 LAGOSlocus$lagoslakeid <- as.factor(LAGOSlocus$lagoslakeid)
+
 LAGOSnutrient$lagoslakeid <- as.factor(LAGOSnutrient$lagoslakeid)
+
+LAGOS.lulc$lagoslakeid <- as.factor(LAGOS.lulc$lagoslakeid)
+
+LAGOS.chag$lagoslakeid <- as.factor(LAGOS.chag$hu8_zoneid)
+
+
+
+
 
 # Join data frames
 LAGOSlocations <- left_join(LAGOSlocus, LAGOSstate, by = "state_zoneid")
@@ -77,16 +86,8 @@ LAGOSTPandTN <- left_join(LAGOSnutrient, LAGOSlocations, by = "lagoslakeid")
 LAGOSTPandTN <- left_join(LAGOSTPandTN, LAGOS.lulc, by = "lagoslakeid")
 LAGOSTPandTN <- left_join(LAGOSTPandTN, LAGOS.chag, by = "lagoslakeid")
 
-LAGOSTPandTN <- 
-  LAGOSTPandTN %>%
-  select(lagoslakeid, sampledate, chla, tp, tn, secchi, 
-         hu8_dep_totaln_2010_mean, , state, state_name) %>%
-  mutate(sampleyear = year(sampledate), 
-         samplemonth = month(sampledate), 
-         season = as.factor(quarter(sampledate, fiscal_start = 12))) %>%
-  drop_na(chla:secchi)
-
-colnames(LAGOSTPandTN)
+LAGOStotal <- select(LAGOSTPandTN, lagoslakeid, sampledate, chla, tp, tn, secchi, gnis_name, lake_area_ha, state, state_name, buffer500m_nlcd2011_pct_21, buffer500m_nlcd2011_pct_23, hu8_dep_totaln_2010_mean) %>%
+  drop_na()
 
 ```
 
@@ -95,6 +96,11 @@ Examine potential correlations among your predictor variables. If your predictor
 1. Create a correlation plot for your 7 variables of interest (TN, TP, and the five predictor variables). What patterns do you see? (hint: function `corrplot` in the corrplot package. I like to use `upper = "ellipse"` inside the function).
 
 ```{r}
+library(corrplot)
+corrplot(cor(LAGOStotal[,c(3:6,11:13)]), method="circle")
+
+
+
 
 ```
 

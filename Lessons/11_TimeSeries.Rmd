@@ -77,6 +77,8 @@ ClearCreekPlot <-
        axis.title.x = element_blank())
 print(ClearCreekPlot)
 
+#variance by season. Some ciclical things. Not very clear trend.
+
 ```
 
 The simplest option to characterize a time series is a linear regression. 
@@ -89,6 +91,10 @@ ClearCreekRegressionPlot <-
   theme(plot.title = element_text(margin = margin(b = -10), size = 12), 
        axis.title.x = element_blank())
 print(ClearCreekRegressionPlot)
+
+#linear regresion not very useful. The mean is a value that doenst make sense. You have many values below the mean. The seasonality is the problem. If you dont have seasonality linear could be efective. Anual means can be an oportutnity to use linear regresion.
+
+#Try to choose the simpler model. But to simple sometimes dont work.
 ```
 
 Is a linear regression an appropriate model for the data in this case? Why or why not?
@@ -115,6 +121,13 @@ Note: time series objects must be equispaced, which requires interpolation if th
 ```{r}
 ClearCreek_ts <- ts(ClearCreekDischarge[[4]], frequency = 365)
 
+#for timeseries you only can provide one column. Something about you dont have the date. There is no information stored about date. Therefore, you need data that it is equidistant. For NAs you need an interpolation or eliminate every other day. 
+
+
+table(diff(ClearCreekDischarge$Date))
+
+# there is a gap. We wont bother for now.
+
 ```
 
 The `stl` function decomposes the time series object into its component parts. We must specify that the window for seasonal extraction is either "periodic" or a specific number of at least 7. The decomposition proceeds through a loess (locally estimated scatterplot smoothing) function.
@@ -126,6 +139,10 @@ ClearCreek_Decomposed <- stl(ClearCreek_ts, s.window = "periodic")
 
 # Visualize the decomposed series. 
 plot(ClearCreek_Decomposed)
+
+#data, seasonal info, trend, remainder
+#Trend is all over the place. 
+#remainder. All the error that is not predicted by season or trend,
 
 # We can extract the components and turn them into data frames
 ClearCreek_Components <- as.data.frame(ClearCreek_Decomposed$time.series[,1:3])
@@ -140,12 +157,16 @@ ggplot(ClearCreek_Components) +
   geom_hline(yintercept = 0, lty = 2) +
   ylab(expression("Discharge (ft"^3*"/s)"))
 
+#the trends coincide with the high discharge. The trend is always posible. 
+
 # Visualize how the seasonal cycle maps onto the data
 ggplot(ClearCreek_Components) +
   geom_line(aes(y = Observed, x = Date),  size = 0.25) +
   geom_line(aes(y = seasonal, x = Date), color = "#c13d75ff") +
   geom_hline(yintercept = 0, lty = 2) +
   ylab(expression("Discharge (ft"^3*"/s)"))
+
+#There are some negative seasonal values. 
 
 ```
 
