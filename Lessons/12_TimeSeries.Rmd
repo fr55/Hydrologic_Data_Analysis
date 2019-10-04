@@ -31,14 +31,16 @@ library(tseries)
 
 theme_set(theme_classic())
 
-LAGOSdata <- lagosne_load()
+#LAGOSdata <- lagosne_load()
+load(file = "./Data/Raw/LAGOSdata.rda")
+
 ```
 
 ## Trend analysis
 
 Two types of trends may be present in our time series dataset: **monotonic** or **step**. Monotonic trends are a gradual shift over time that is consistent in direction, for example in response to land use change. Step trends are a distinct shift at a given time point, for example in response to a policy being enacted. 
 
-### Step trend analysis
+### Step trend analysis (a policy that started, could have a lag)
 
 Step trend analysis works well for upstream/downstream and before/after study design. We will not delve into these methods during class, but specific tests are listed below for future reference. 
 
@@ -55,18 +57,18 @@ In general, detecting a monotonic trend requires a long sequence of data with fe
 
 Adjusting the data may be necessary to fulfill the assumptions of a trend test. These adjustments include **aggregation**, **subsampling**, and **interpolation**. What do each of these mean, and why might we want to use them?
 
-> aggregation: 
+> aggregation: e.g. Put daily data to week data. e.g. Average values across a month. e.g. 15 minute data that you use to have a daily range.
 
-> subsampling: 
+> subsampling: Cutting your data. You have different frecuencies in diff periods of time. Biweekly data versus a year that has a lot of data. Low frecuency you dont get as much info and detail. You want equaly spaced.
 
-> interpolation: 
+> interpolation: Filling in gaps in your data set. there are methods for that. 
 
 Specific tests for monotonic trend analysis are listed below, with assumptions and tips: 
 
 * **linear regression**: no seasonality, fits the assumptions of a parametric test. Function: `lm`
 * **Mann-Kendall**: no seasonality, non-parametric, no temporal autocorrelation, missing data allowed. Function: `mk.test` (package: trend)
 * **modified Mann-Kendall**: no seasonality, non-parametric, accounts for temporal autocorrelation, missing data allowed. Function: `mmky` and `mmkh` (package: modifiedmk)
-* **Seasonal Mann-Kendall**: seasonality, non-parametric, no temporal autocorelation, identical distribution. Function: `smk.test` (package: trend)
+* **Seasonal Mann-Kendall**: seasonality, non-parametric, no temporal autocorelation, identical distribution (exact same frecuency). Function: `smk.test` (package: trend)
 
 The packages trend, Kendall, and modifiedmk also include other modifications to monotonic trend tests. Look into the documentation for these packages if you are applying a special case.
 
@@ -96,6 +98,11 @@ MendotaTP <-
 ggplot(Mendotadata, aes(x = sampledate, y = tp)) +
   geom_point()
 print(MendotaTP)
+
+#Recomen: You look at the data before chossing test and everything.
+
+# there is a big outlier. we dont needed it. There is a gap on sampling. We remove the four points. To few points. not useful info. We can have the question to be after 88. There is seasonality. 
+
 ```
 
 It is crucially important to visualize your time series before moving forward with any test. In this case, we notice two major issues: 
@@ -109,7 +116,7 @@ Detecting whether the outlier is a true measurement or a mistake in the dataset 
 # Remove issues 1 and 2, arrange by date
 Mendotadata <- Mendotadata %>%
   filter(tp < 300 & sampledate > "1988-01-01") %>%
-  arrange(sampledate)
+  arrange(sampledate) #dyplier: sort it by date.
 
 # Re-plot data
 MendotaTP <-
@@ -117,6 +124,8 @@ ggplot(Mendotadata, aes(x = sampledate, y = tp)) +
   geom_point() +
   geom_line()
 print(MendotaTP)
+
+#many lakes dont have data over the winter. This lake has very nice data.
 ```
 
 We see distinct seasonality, with higher TP values occurring in the winter compared to summer. Therefore, we will proceed with a **Seasonal Mann-Kendall** test. 
@@ -125,14 +134,16 @@ We see that TP data were collected somewhere between biweekly and monthly across
 
 Common interpolation methods: 
 
-* **Piecewise constant**: <fill in notes here>
-* **Linear**: <fill in notes here>
-* **Spline**: <fill in notes here>
+* **Piecewise constant**: <at any point in time you tak ethe nearest neighbor. looks like a ladder>
+* **Linear**: <average. connect the dots>
+* **Spline**: <for aquatic ussualy this dont outperforms linear. >
 
 Linear interpolation is most common for water quality data, and fits with our understanding about how TP might change over time in this system. 
 ```{r}
 # Generate monthly values from July 1988 to August 2013
-linearinterpolation <- as.data.frame(approx(Mendotadata, n = 303, method = "linear"))
+linearinterpolation <- as.data.frame(approx(Mendotadata, n = 303, method = "linear")) #we tell the function how many months we want to get. 
+# the as data is because the function doesnt provide a datframe directly
+#gives dates on units of nymbers of days since 1970.
 linearinterpolation$x <- as.Date(linearinterpolation$x, origin = "1970-01-01")
 names(linearinterpolation) <- c("Date", "TP")
 
@@ -143,22 +154,40 @@ ggplot(Mendotadata, aes(x = sampledate, y = tp)) +
   geom_line() +
   geom_point(data = linearinterpolation, aes(x = Date, y = TP), color = "#c13d75ff") 
 print(MendotaTPinterpolated)
+# never will go above of below the actual data. Limitation of the method.
 
 # Generate time series (smk.test needs ts, not data.frame)
 Mendotatimeseries <- ts(linearinterpolation$TP, frequency = 12, 
-                        start = c(1988, 7, 5), end = c(2013, 8, 5))
+                        start = c(1988, 7, 5), end = c(2013, 8, 5)) #the seasons are all the januaries and novembers etc. not the year.
 # Run SMK test
 Mendotatrend <- smk.test(Mendotatimeseries)
 
 # Inspect results
 Mendotatrend
+# 	Seasonal Mann-Kendall trend test (Hirsch-Slack test)
+# 
+# data:  Mendotatimeseries
+# z = -1.4483 (direction and magnitud of the trend), p-value = 0.1475 (there is not a significant trend)
+# alternative hypothesis: true S is not equal to 0
+# sample estimates:
+#     S  varS 
+#  -218 22450 
+#S counts the diff between one point and the next. a larger S is bigger difference.
+
+
 summary(Mendotatrend)
+
+#this analizes every month. (this is the 5 year thing. you need more data)
+# Season 10:   S = 0 -164 1833.3 -0.547 -3.807 0.00014074 ***  October
+# Season 11:   S = 0 -114 1833.3 -0.380 -2.639 0.00831237  **  November
+
+#Negative trends
 
 ```
 
 What would we conclude based on these findings? Describe as you would to an educated but non-specialist audience.
 
->
+> There is not a significatn overall trend but there is a trend decreasing in October and November.
  
 If a significant trend was present, we could compute a **Sen's Slope** to quantify that trend (`sens.slope` function in the trend package).
  
@@ -196,19 +225,23 @@ ARMA models require stationary data. This means that there is no monotonic trend
 
 ```{r}
 adf.test(ClearCreek_ts, alternative = "stationary")
+
+# we want below 5. it is stationary.
 ```
 
 Let's inspect the ACF and pacf plots. Notice these don't match up perfectly with just one AR or MA formulation, so we likely have interactions of both processes at play. 
 ```{r}
 acf(ClearCreek_ts)
 pacf(ClearCreek_ts)
+
+# we were looking at some plots in a web page. We didnt get a distinct math to the spected apearence of the data. To the human eye is hard to tell.
 ```
 
 While some processes might be easy to identify, it is often complicated to predict the order of AR and MA processes when the operate in the same dataset. To get around this issue, we will run multiple potential formulations of the model and see which one results in the most parsimonious fit using AIC. The function `auto.arima` does this automatically.
 
 ```{r}
 # run the arima function and search for best fit 
-auto.arima(ClearCreek_ts, trace = TRUE)
+auto.arima(ClearCreek_ts, trace = TRUE) #trace show you what is doing
 
 # create an object that defines the best fit model
 fit <- arima(ClearCreek_ts, c(1, 0, 1),seasonal = list(order = c(2, 1, 0), period = 12))
@@ -218,6 +251,8 @@ ClearCreekprediction <- predict(fit, n.ahead = 10*12)
 
 # plot future predictions
 ts.plot(ClearCreek_ts, ClearCreekprediction$pred, lty = c(1, 3))
+
+#the projected area is pretty uniform but fits very well a typical year. You ocould plot one of the other models.
 ```
 
 How do future predictions compare to the past? What other covariates might you bring into the analysis to improve forecasting capabilities?
