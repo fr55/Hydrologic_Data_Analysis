@@ -31,8 +31,9 @@ library(tseries)
 
 theme_set(theme_classic())
 
-#LAGOSdata <- lagosne_load()
-load(file = "./Data/Raw/LAGOSdata.rda")
+#lagosne_get(dest_folder = LAGOSNE:::lagos_path(), overwrite = TRUE)
+LAGOSdata <- lagosne_load()
+#load(file = "./Data/Raw/LAGOSdata.rda")
 
 ```
 
@@ -134,7 +135,7 @@ We see that TP data were collected somewhere between biweekly and monthly across
 
 Common interpolation methods: 
 
-* **Piecewise constant**: <at any point in time you tak ethe nearest neighbor. looks like a ladder>
+* **Piecewise constant**: <at any point in time you take the nearest neighbor. looks like a ladder>
 * **Linear**: <average. connect the dots>
 * **Spline**: <for aquatic ussualy this dont outperforms linear. >
 

@@ -1,0 +1,647 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=2.54cm]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Assignment 6: Time Series Analysis},
+            pdfauthor={Felipe Raby Amadori},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Assignment 6: Time Series Analysis}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Felipe Raby Amadori}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+    \date{}
+    \predate{}\postdate{}
+  
+
+\begin{document}
+\maketitle
+
+\hypertarget{overview}{%
+\subsection{OVERVIEW}\label{overview}}
+
+This exercise accompanies the lessons in Hydrologic Data Analysis on
+time series analysis
+
+\hypertarget{directions}{%
+\subsection{Directions}\label{directions}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Change ``Student Name'' on line 3 (above) with your name.
+\item
+  Work through the steps, \textbf{creating code and output} that fulfill
+  each instruction.
+\item
+  Be sure to \textbf{answer the questions} in this assignment document.
+\item
+  When you have completed the assignment, \textbf{Knit} the text and
+  code into a single pdf file.
+\item
+  After Knitting, submit the completed exercise (pdf file) to the
+  dropbox in Sakai. Add your last name into the file name (e.g.,
+  ``A06\_Salk.html'') prior to submission.
+\end{enumerate}
+
+The completed exercise is due on 11 October 2019 at 9:00 am.
+
+\hypertarget{setup}{%
+\subsection{Setup}\label{setup}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Verify your working directory is set to the R project file,
+\item
+  Load the tidyverse, lubridate, trend, and dataRetrieval packages.
+\item
+  Set your ggplot theme (can be theme\_classic or something else)
+\item
+  Load the ClearCreekDischarge.Monthly.csv file from the processed data
+  folder. Call this data frame ClearCreekDischarge.Monthly.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\NormalTok{opts_chunk}\OperatorTok{$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{message =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{warning =} \OtherTok{FALSE}\NormalTok{)}
+
+\CommentTok{#Verify your working directory is set to the R project file}
+\KeywordTok{getwd}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "C:/Users/Felipe/OneDrive - Duke University/1. DUKE/Ramos 3 Semestre/Hydrologic_Data_Analysis"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Load the tidyverse, lubridate, trend, and dataRetrieval packages}
+\KeywordTok{library}\NormalTok{(tidyverse)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## -- Attaching packages --------------------------------------------------------------------------------------- tidyverse 1.2.1 --
+\end{verbatim}
+
+\begin{verbatim}
+## v ggplot2 3.2.1     v purrr   0.3.2
+## v tibble  2.1.3     v dplyr   0.8.3
+## v tidyr   0.8.3     v stringr 1.4.0
+## v readr   1.3.1     v forcats 0.4.0
+\end{verbatim}
+
+\begin{verbatim}
+## -- Conflicts ------------------------------------------------------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(trend)}
+\KeywordTok{library}\NormalTok{(dataRetrieval)}
+\KeywordTok{library}\NormalTok{(lubridate)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attaching package: 'lubridate'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:base':
+## 
+##     date
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(ggplot2)}
+
+\CommentTok{#Set your ggplot theme}
+\NormalTok{felipe_theme <-}\StringTok{ }\KeywordTok{theme_light}\NormalTok{(}\DataTypeTok{base_size =} \DecValTok{12}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{color =} \StringTok{"grey8"}\NormalTok{), }
+        \DataTypeTok{legend.position =} \StringTok{"right"}\NormalTok{, }\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{hjust =} \FloatTok{0.5}\NormalTok{)) }
+\KeywordTok{theme_set}\NormalTok{(felipe_theme)}
+
+
+\CommentTok{#Load the ClearCreekDischarge.Monthly.csv file from the processed data folder.}
+\NormalTok{ClearCreekDischarge.Monthly <-}\StringTok{ }\KeywordTok{read.csv}\NormalTok{(}\StringTok{"./Data/Processed/ClearCreekDischarge.Monthly.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{time-series-decomposition}{%
+\subsection{Time Series Decomposition}\label{time-series-decomposition}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Create a new data frame that includes daily mean discharge at the Eno
+  River for all available dates (\texttt{siteNumbers\ =\ "02085070"}).
+  Rename the columns accordingly.
+\item
+  Plot discharge over time with geom\_line. Make sure axis labels are
+  formatted appropriately.
+\item
+  Create a time series of discharge
+\item
+  Decompose the time series using the \texttt{stl} function.
+\item
+  Visualize the decomposed time series.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Create a new data frame that includes daily mean discharge at the Eno River for all}
+\CommentTok{# available dates (`siteNumbers = "02085070"`). Rename the columns accordingly.}
+\NormalTok{EnoRiverDischarge <-}\StringTok{ }\KeywordTok{readNWISdv}\NormalTok{(}\DataTypeTok{siteNumbers =} \StringTok{"02085070"}\NormalTok{,}
+                     \DataTypeTok{parameterCd =} \StringTok{"00060"}\NormalTok{, }\CommentTok{# discharge (ft3/s)}
+                     \DataTypeTok{startDate =} \StringTok{""}\NormalTok{,}
+                     \DataTypeTok{endDate =} \StringTok{""}\NormalTok{)}
+\KeywordTok{names}\NormalTok{(EnoRiverDischarge)[}\DecValTok{4}\OperatorTok{:}\DecValTok{5}\NormalTok{] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Discharge"}\NormalTok{, }\StringTok{"Approval.Code"}\NormalTok{)}
+
+\CommentTok{# Plot discharge over time with geom_line. Make sure axis labels are formatted appropriately.}
+\NormalTok{EnoRiver.plot <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(EnoRiverDischarge, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ Date)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y =}\NormalTok{ Discharge), }\DataTypeTok{color =} \StringTok{"blue"}\NormalTok{, }\DataTypeTok{show.legend =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{""}\NormalTok{, }\DataTypeTok{y =} \KeywordTok{expression}\NormalTok{(}\StringTok{"Discharge (ft"}\OperatorTok{^}\DecValTok{3}\OperatorTok{*}\StringTok{"/s)"}\NormalTok{), }
+       \DataTypeTok{title =} \StringTok{"Eno River Discharge Over Time"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size =} \DecValTok{12}\NormalTok{),}
+        \DataTypeTok{axis.title.x =} \KeywordTok{element_blank}\NormalTok{())}
+
+\KeywordTok{print}\NormalTok{(EnoRiver.plot)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A06_Raby_TimeSeries_files/figure-latex/unnamed-chunk-1-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Create a time series of discharge}
+
+\CommentTok{# First we check if there are gaps in the data.}
+\KeywordTok{table}\NormalTok{(}\KeywordTok{diff}\NormalTok{(EnoRiverDischarge}\OperatorTok{$}\NormalTok{Date))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##     1    39 
+## 20449     1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#There is 1 data gap of 38 measurements}
+
+\CommentTok{# Looking for the dates where there is no measurement}
+\NormalTok{DateRange <-}\StringTok{ }\KeywordTok{seq}\NormalTok{(}\KeywordTok{min}\NormalTok{(EnoRiverDischarge}\OperatorTok{$}\NormalTok{Date), }\KeywordTok{max}\NormalTok{(EnoRiverDischarge}\OperatorTok{$}\NormalTok{Date), }\DataTypeTok{by =} \DecValTok{1}\NormalTok{)}
+\NormalTok{DateRange[}\OperatorTok{!}\NormalTok{DateRange }\OperatorTok{%in%}\StringTok{ }\NormalTok{EnoRiverDischarge}\OperatorTok{$}\NormalTok{Date]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  [1] "2017-10-21" "2017-10-22" "2017-10-23" "2017-10-24" "2017-10-25"
+##  [6] "2017-10-26" "2017-10-27" "2017-10-28" "2017-10-29" "2017-10-30"
+## [11] "2017-10-31" "2017-11-01" "2017-11-02" "2017-11-03" "2017-11-04"
+## [16] "2017-11-05" "2017-11-06" "2017-11-07" "2017-11-08" "2017-11-09"
+## [21] "2017-11-10" "2017-11-11" "2017-11-12" "2017-11-13" "2017-11-14"
+## [26] "2017-11-15" "2017-11-16" "2017-11-17" "2017-11-18" "2017-11-19"
+## [31] "2017-11-20" "2017-11-21" "2017-11-22" "2017-11-23" "2017-11-24"
+## [36] "2017-11-25" "2017-11-26" "2017-11-27"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Data gap between 10/21/2017 & 11/27/2017}
+
+\CommentTok{#Considering that time series objects must be equispaced, that the gap is to big to interpolate}
+\CommentTok{#using the neighboring values, and that # after 11/27/2017 we only have less than two years of data}
+\CommentTok{#of an approx. 56 years dataset, we are only going to consider for the analysis }
+\CommentTok{#the data from 09/01/1963 to 10/20/2017.}
+
+\CommentTok{#Filtering the data}
+\NormalTok{EnoRiverDischarge2 <-}\StringTok{ }\KeywordTok{filter}\NormalTok{(EnoRiverDischarge, Date }\OperatorTok{<}\StringTok{ "2017-10-21"}\NormalTok{)}
+
+\CommentTok{#Checking for gaps}
+\KeywordTok{table}\NormalTok{(}\KeywordTok{diff}\NormalTok{(EnoRiverDischarge2}\OperatorTok{$}\NormalTok{Date))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##     1 
+## 19773
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Plot of the selected data}
+\NormalTok{EnoRiver.plot2 <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(EnoRiverDischarge2, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ Date)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y =}\NormalTok{ Discharge), }\DataTypeTok{color =} \StringTok{"blue"}\NormalTok{, }\DataTypeTok{show.legend =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{""}\NormalTok{, }\DataTypeTok{y =} \KeywordTok{expression}\NormalTok{(}\StringTok{"Discharge (ft"}\OperatorTok{^}\DecValTok{3}\OperatorTok{*}\StringTok{"/s)"}\NormalTok{), }
+       \DataTypeTok{title =} \StringTok{"Eno River Discharge Over Time"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size =} \DecValTok{12}\NormalTok{),}
+        \DataTypeTok{axis.title.x =} \KeywordTok{element_blank}\NormalTok{())}
+
+\KeywordTok{print}\NormalTok{(EnoRiver.plot2)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A06_Raby_TimeSeries_files/figure-latex/unnamed-chunk-1-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#Time series of discharge}
+\NormalTok{EnoRiver_ts <-}\StringTok{ }\KeywordTok{ts}\NormalTok{(EnoRiverDischarge2[[}\DecValTok{4}\NormalTok{]], }\DataTypeTok{frequency =} \DecValTok{365}\NormalTok{)}
+
+\CommentTok{#Decompose the time series using the `stl` function.}
+\NormalTok{EnoRiver_Decomposed <-}\StringTok{ }\KeywordTok{stl}\NormalTok{(EnoRiver_ts, }\DataTypeTok{s.window =} \StringTok{"periodic"}\NormalTok{)}
+
+
+
+\CommentTok{#From class 11}
+\CommentTok{# Import data}
+\NormalTok{ClearCreekDischarge <-}\StringTok{ }\KeywordTok{readNWISdv}\NormalTok{(}\DataTypeTok{siteNumbers =} \StringTok{"06719505"}\NormalTok{,}
+                     \DataTypeTok{parameterCd =} \StringTok{"00060"}\NormalTok{, }\CommentTok{# discharge (ft3/s)}
+                     \DataTypeTok{startDate =} \StringTok{""}\NormalTok{,}
+                     \DataTypeTok{endDate =} \StringTok{""}\NormalTok{)}
+\KeywordTok{names}\NormalTok{(ClearCreekDischarge)[}\DecValTok{4}\OperatorTok{:}\DecValTok{5}\NormalTok{] <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"Discharge"}\NormalTok{, }\StringTok{"Approval.Code"}\NormalTok{)}
+\NormalTok{ClearCreek_ts <-}\StringTok{ }\KeywordTok{ts}\NormalTok{(ClearCreekDischarge[[}\DecValTok{4}\NormalTok{]], }\DataTypeTok{frequency =} \DecValTok{365}\NormalTok{)}
+\NormalTok{ClearCreek_Decomposed <-}\StringTok{ }\KeywordTok{stl}\NormalTok{(ClearCreek_ts, }\DataTypeTok{s.window =} \StringTok{"periodic"}\NormalTok{)}
+
+
+\CommentTok{#Visualize the decomposed Eno River time series.}
+\KeywordTok{plot}\NormalTok{(EnoRiver_Decomposed)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A06_Raby_TimeSeries_files/figure-latex/unnamed-chunk-1-3.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Visualize the decomposed Clear Creek series. }
+\KeywordTok{plot}\NormalTok{(ClearCreek_Decomposed)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A06_Raby_TimeSeries_files/figure-latex/unnamed-chunk-1-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# Zooming to check what is the smaller peak in the seasonal plot}
+\NormalTok{EnoRiverDischarge3 <-}\StringTok{ }\KeywordTok{filter}\NormalTok{(EnoRiverDischarge, Date }\OperatorTok{<}\StringTok{ "1967-10-21"}\NormalTok{)}
+\CommentTok{#Plot of the selected data}
+\NormalTok{EnoRiver.plot3 <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(EnoRiverDischarge3, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ Date)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{y =}\NormalTok{ Discharge), }\DataTypeTok{color =} \StringTok{"blue"}\NormalTok{, }\DataTypeTok{show.legend =} \OtherTok{FALSE}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{""}\NormalTok{, }\DataTypeTok{y =} \KeywordTok{expression}\NormalTok{(}\StringTok{"Discharge (ft"}\OperatorTok{^}\DecValTok{3}\OperatorTok{*}\StringTok{"/s)"}\NormalTok{), }
+       \DataTypeTok{title =} \StringTok{"Eno River Discharge Over Time"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{size =} \DecValTok{12}\NormalTok{),}
+        \DataTypeTok{axis.title.x =} \KeywordTok{element_blank}\NormalTok{())}
+
+\KeywordTok{print}\NormalTok{(EnoRiver.plot3)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A06_Raby_TimeSeries_files/figure-latex/unnamed-chunk-1-5.pdf}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{9}
+\tightlist
+\item
+  How do the seasonal and trend components of the decomposition compare
+  to the Clear Creek discharge dataset? Are they similar in magnitude?
+\end{enumerate}
+
+\#data, seasonal info, trend, remainder \#Trend is all over the place.
+\#remainder. All the error that is not predicted by season or trend,
+\#the trends coincide with the high discharge. The trend is always
+positive. \#There are some negative seasonal values.
+
+\begin{quote}
+Seasonal: There is a clear seasonality in the Eno River and the Clear
+Creek discharge datasets. Nevertheless, the Eno River data has a double
+seasonal peak. It has a smaller peak in between the big peaks. It has
+the bigger seasonal peak in the first months of the year and then it has
+a smaller seasonal peak in spring/Summer. They are not similar in
+magnitude probably because the discharge data of the two rivers is very
+different in magnitude as well.
+\end{quote}
+
+\begin{quote}
+Trend: Both datasets do not show any clear trend. Even though the
+magnitude of the Eno River Discharge data is greater than the Clear
+Creek Discharge data, the trend plots of both rivers have similar
+magnitude; moreover, Clear Creek has higher local trends (values over
+300 ft/s) than the Eno River (only 1 peak over 250 ft/s).
+\end{quote}
+
+\hypertarget{trend-analysis}{%
+\subsection{Trend Analysis}\label{trend-analysis}}
+
+Research question: Has there been a monotonic trend in discharge in
+Clear Creek over the period of study?
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{10}
+\tightlist
+\item
+  Generate a time series of monthly discharge in Clear Creek from the
+  ClearCreekDischarge.Monthly data frame. This time series should
+  include just one column (discharge).
+\item
+  Run a Seasonal Mann-Kendall test on the monthly discharge data.
+  Inspect the overall trend and the monthly trends.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# The SMK test requires identically distributed data, condition that this dataset complies with.}
+
+\NormalTok{ClearCreekDischarge.Monthly_ts <-}\StringTok{ }\KeywordTok{ts}\NormalTok{(ClearCreekDischarge.Monthly[[}\DecValTok{3}\NormalTok{]], }
+                                     \DataTypeTok{frequency =} \DecValTok{12}\NormalTok{, }\DataTypeTok{start =} \KeywordTok{c}\NormalTok{(}\DecValTok{1974}\NormalTok{, }\DecValTok{10}\NormalTok{)) }
+\CommentTok{# 12 because we have monthly data.}
+
+
+\NormalTok{ClearCreekDischarge.Monthly_trend <-}\StringTok{ }\KeywordTok{smk.test}\NormalTok{(ClearCreekDischarge.Monthly_ts)}
+
+\CommentTok{# Inspect results}
+\NormalTok{ClearCreekDischarge.Monthly_trend}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Seasonal Mann-Kendall trend test (Hirsch-Slack test)
+## 
+## data:  ClearCreekDischarge.Monthly_ts
+## z = 1.6586, p-value = 0.09719
+## alternative hypothesis: true S is not equal to 0
+## sample estimates:
+##      S   varS 
+##    590 126102
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(ClearCreekDischarge.Monthly_trend)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Seasonal Mann-Kendall trend test (Hirsch-Slack test)
+## 
+## data: ClearCreekDischarge.Monthly_ts
+## alternative hypothesis: two.sided
+## 
+## Statistics for individual seasons
+## 
+## H0
+##                      S  varS    tau      z Pr(>|z|)  
+## Season 1:   S = 0   35 10449  0.035  0.333 0.739425  
+## Season 2:   S = 0    4 10450  0.004  0.029 0.976588  
+## Season 3:   S = 0  204 10450  0.206  1.986 0.047054 *
+## Season 4:   S = 0  230 10450  0.232  2.240 0.025081 *
+## Season 5:   S = 0  148 10450  0.149  1.438 0.150434  
+## Season 6:   S = 0   94 10450  0.095  0.910 0.362951  
+## Season 7:   S = 0  -54 10450 -0.055 -0.518 0.604135  
+## Season 8:   S = 0  -99 10449 -0.100 -0.959 0.337703  
+## Season 9:   S = 0  -90 10450 -0.091 -0.871 0.383958  
+## Season 10:   S = 0  64 11154  0.062  0.597 0.550828  
+## Season 11:   S = 0  24 10450  0.024  0.225 0.821984  
+## Season 12:   S = 0  30 10450  0.030  0.284 0.776650  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{12}
+\tightlist
+\item
+  Is there an overall monotonic trend in discharge over time? If so, is
+  it positive or negative?
+\end{enumerate}
+
+\begin{quote}
+We fail to reject the null hypothesis of no overall monotonic trend in
+discharge over time with a 5\% level of significance (Hirsch-Slack test,
+z = 1.6586, p-value = 0.09719 \textgreater{} 0.05). At a 5\% level of
+significance, the sample data does not provide enough evidence to
+conclude that there is an overall monotonic trend in discharge over
+time.
+\end{quote}
+
+\begin{quote}
+S is positive = 590, so if the case the null hypothesis was rejected the
+trend would have been positive.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{13}
+\tightlist
+\item
+  Are there any monthly monotonic trends in discharge over time? If so,
+  during which months do they occur and are they positive or negative?
+\end{enumerate}
+
+\begin{quote}
+We reject the null hypothesis of no monotonic trend in discharge over
+time for the Months of March and April with a 5\% level of significance
+(March: Hirsch-Slack test, z = 1.986, Pr(\textgreater\textbar z\textbar)
+= 0.047054 \textless{} 0.05. April: Hirsch-Slack test, z = 2.240,
+Pr(\textgreater\textbar z\textbar) = 0.025081 \textless{} 0.05). At a
+5\% level of significance, the sample data does provide enough evidence
+to conclude that there is a positive monotonic trend in discharge over
+time in the Months of March and April..
+\end{quote}
+
+\hypertarget{reflection}{%
+\subsection{Reflection}\label{reflection}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{14}
+\tightlist
+\item
+  What are 2-3 conclusions or summary points about time series you
+  learned through your analysis?
+\end{enumerate}
+
+\begin{quote}
+I learned how time series can be useful for detecting seasonal behaviors
+and trends in a response variable that has been tracked over time. Also,
+how to use the ts, and stl functions and the importance of studying the
+data first for gaps and the frequency the data was recorded. Finally I
+learned about options to solve gap issues in the data to be able to
+perform a time series analysis.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{15}
+\tightlist
+\item
+  What data, visualizations, and/or models supported your conclusions
+  from 15?
+\end{enumerate}
+
+\begin{quote}
+Basically the whole lab and classes 11 and 12. Every part of them was
+super useful.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{16}
+\tightlist
+\item
+  Did hands-on data analysis impact your learning about time series
+  relative to a theory-based lesson? If so, how?
+\end{enumerate}
+
+\begin{quote}
+Yes. Working with the data makes you think about about it and doubts
+that you didn't have in class emerge. Trying to solve those doubts by
+yourself is a valuable way of learning.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{17}
+\tightlist
+\item
+  How did the real-world data compare with your expectations from
+  theory?
+\end{enumerate}
+
+\begin{quote}
+To my experience with these type of data (in another country), these was
+way more complete that the data I am used to. From theory, I believed
+the real data was ok except for that gap in the year 2017 of the Eno
+River discharge data.
+\end{quote}
+
+
+\end{document}
