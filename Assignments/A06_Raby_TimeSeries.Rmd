@@ -151,14 +151,7 @@ print(EnoRiver.plot3)
 
 10. How do the seasonal and trend components of the decomposition compare to the Clear Creek discharge dataset? Are they similar in magnitude?
 
-#data, seasonal info, trend, remainder
-#Trend is all over the place. 
-#remainder. All the error that is not predicted by season or trend,
-#the trends coincide with the high discharge. The trend is always positive. 
-#There are some negative seasonal values. 
-
-
-> Seasonal: There is a clear seasonality in the Eno River and the Clear Creek discharge datasets. Nevertheless, the Eno River data has a double seasonal peak. It has a smaller peak in between the big peaks. It has the bigger seasonal peak in the first months of the year and then it has a smaller seasonal peak in spring/Summer. They are not similar in magnitude probably because the discharge data of the two rivers is very different in magnitude as well.
+> Seasonal: There is a clear seasonality in the Eno River and the Clear Creek discharge datasets. Nevertheless, the Eno River data has a double seasonal peak. It has a smaller peak in between the big peaks. It has the bigger seasonal peak in the first months of the year and then it has a smaller seasonal peak in spring/Summer. In the Eno River the seasonal component is smaller in magnitude than the Clear Creek, which is something I was not expecting given the difference in discharge magnitude between the two rivers.
 
 > Trend: Both datasets do not show any clear trend. Even though the magnitude of the Eno River Discharge data is greater than the Clear Creek Discharge data, the trend plots of both rivers have similar magnitude; moreover, Clear Creek has higher local trends (values over 300 ft/s) than the Eno River (only 1 peak over 250 ft/s).
 
@@ -209,4 +202,4 @@ summary(ClearCreekDischarge.Monthly_trend)
 
 18.	How did the real-world data compare with your expectations from theory?
 
-> To my experience with these type of data (in another country), these was way more complete that the data I am used to. From theory, I believed the real data was ok except for that gap in the year 2017 of the Eno River discharge data.  
+> To my experience with these type of data (in another country), these was way more complete that the data I am used to. From a  theory perspective, I believed the real data was ok except for that gap in the year 2017 of the Eno River discharge data.  
