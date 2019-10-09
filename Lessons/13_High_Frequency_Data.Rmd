@@ -17,13 +17,29 @@ editor_options:
 
 High frequency data is usually defined as frequencies significantly lower than daily (e.g. 5-minute, 15-minute, 1 hr etc). What types of hydrological and biological processes happen on this timescale that we might want to investigate?
 
->
+> significantly faster than daily. Flash floods. Storms. 
+Temp> big daily changes (oxygen, solubility that depends on T and reactions)
+Fast storms/flash floods
+Contaminent: can fluctuate a lot.
+
+```{r}
+#to look what rivers are abailable
+a<-whatNWISsites(parameterCD="00060", statecd="NC")
+
+library(sf)
+library(mapview)
+a_sf <- st_as_sf(a,coords = c('dec_long_va','dec_lat_va'),crs=4326)
+mapview(a_sf)
+```
+
 
 
 ## Session Set Up
 
 ```{r, message = FALSE}
 getwd()
+
+#install.packages("EcoHydRology")
 
 packages <- c(
   "dataRetrieval", "tidyverse", "cowplot", "EcoHydRology", "xts", "dygraphs"
@@ -37,13 +53,15 @@ theme_set(theme_classic(base_size = 12))
 
 ```{r download data}
 
+#uv is instantaneous
+
 dischargedatTFC2018 <- readNWISuv(
   site = "02097280", #Third Fork Creek at Woodcroft Parkway Near Blands
   parameterCd = "00060",
   startDate = "2018-01-01", 
   endDate = "2019-01-01"
   ) %>% 
-  renameNWISColumns()
+  renameNWISColumns() #This renames the columns!!!
 
 
 dischargedatEC2018 <- readNWISuv(
@@ -54,6 +72,7 @@ dischargedatEC2018 <- readNWISuv(
   ) %>% 
   renameNWISColumns()
 
+#Datetime is not a Date is a POSIXct (number of seconds since a definied period of time) UTC(universal time coordinated. Time in Greenwich)
 
 plot_grid(
   ggplot(dischargedatTFC2018, aes(x = dateTime, y = Flow_Inst)) +
@@ -67,6 +86,18 @@ plot_grid(
   ncol = 1
 )
           
+#Plotted in logscale. Interested in separating baseflow and quick flow.
+
+#Overland flow  (Quick Flow)
+###Pipes
+###Sewers
+#Groundwater     (Baseflow)
+###Diff aquifers.
+#Rain fall directly in the river channel. (Quick Flow)
+
+#Storms are peak on discharge
+
+#The base flow would follow the drops. The minimum values.
 
 ```
 
@@ -85,7 +116,7 @@ TFCbaseflow <- BaseflowSeparation(
   passes = 3
   )
 
-TFC2018 <- cbind(dischargedatTFC2018, TFCbaseflow)
+TFC2018 <- cbind(dischargedatTFC2018, TFCbaseflow) #put back the time info
 
 ggplot(TFC2018, aes(x = dateTime, y = Flow_Inst)) + 
   geom_line() +
@@ -102,6 +133,9 @@ dygraph(
   ) %>% 
   dyRangeSelector()
 
+#We saw how quick and base flow behave on storms. 
+#Area under the curve is the amount of water (volume). Here ussually the area under the quick flow curve is higher because is urban.
+
 Export <- TFC2018 %>%
   mutate(timestep = c(diff(as.numeric(dateTime)), NA_real_),
          baseflowexport = bt * timestep,
@@ -109,20 +143,84 @@ Export <- TFC2018 %>%
   summarize(BaseflowExport_cf = sum(baseflowexport, na.rm = T),
             QuickflowExport_cf = sum(quickflowexport, na.rm = T),
             TotalExport_cf = BaseflowExport_cf + QuickflowExport_cf)
-  
+
+#the NA_real_ is becuase the diff function gives you one result less. It adds an NA value.  The diff is the next diff.
+
+#in the summary we take away the NA. 
+
+PErcentBaseflow <- Export[1]/Export[3]*100
+PErcentBaseflow  
+
+PErcentQflow <- Export[2]/Export[3]*100
+PErcentQflow  
+
 ```
 
 What percentage of water is exported from this watershed as baseflow? What percentage as quickflow?
 
-> 
+> Baseflow 51.9%. Quickflow 48.1%
 
 Repeat this analysis for Ellerbe Creek. How do the percentages compare?
 
->
+> Baseflow 43.4%. Quickflow 56.6%
+
+> Both urban streams. EC more urbanized.
+
+```{r baseflowseparationEC}
+ECbaseflow <- BaseflowSeparation(
+  dischargedatEC2018$Flow_Inst, 
+  filter_parameter = 0.925, 
+  passes = 3
+  )
+
+EC2018 <- cbind(dischargedatEC2018, ECbaseflow) #put back the time info
+
+ggplot(EC2018, aes(x = dateTime, y = Flow_Inst)) + 
+  geom_line() +
+  # scale_y_log10() +
+  geom_line(mapping = aes(x = dateTime, y = bt), color = "darkorange4") +
+  geom_line(mapping = aes(x = dateTime, y = qft), color = "steelblue4")
+
+dygraph(
+  cbind(
+    Flow = with(EC2018, xts(Flow_Inst, order.by = dateTime)), 
+    Baseflow = with(EC2018, xts(bt, order.by = dateTime)), 
+    Quickflow = with(EC2018, xts(qft, order.by = dateTime))
+    )
+  ) %>% 
+  dyRangeSelector()
+
+#We saw how quick and base flow behave on storms. 
+#Area under the curve is the amount of water (volume). Here ussually the area under the quick flow curve is higher because is urban.
+
+ExportEC <- EC2018 %>%
+  mutate(timestep = c(diff(as.numeric(dateTime)), NA_real_),
+         baseflowexport = bt * timestep,
+         quickflowexport = qft * timestep) %>%
+  summarize(BaseflowExport_cf = sum(baseflowexport, na.rm = T),
+            QuickflowExport_cf = sum(quickflowexport, na.rm = T),
+            TotalExport_cf = BaseflowExport_cf + QuickflowExport_cf)
+
+#the NA_real_ is becuase the diff function gives you one result less. It adds an NA value.  The diff is the next diff.
+
+#in the summary we take away the NA. 
+
+PErcentBaseflowEC <- ExportEC[1]/ExportEC[3]*100
+PErcentBaseflowEC  
+
+PErcentQflowEC <- ExportEC[2]/ExportEC[3]*100
+PErcentQflowEC  
+
+```
+
+
+
+
+
 
 What does this mean physically about the watershed?
 
->
+> Urban
 
 ## Hydrologic Flashiness
 
@@ -130,16 +228,18 @@ A "flashy" stream increases in flow faster following a precipitation event.
 
 Refering to our previous work with baseflow separation, would you expect flashiness to increase or decrease with urbanization?
 
-> 
+> increase.
 
 What do you think "urban stream syndrom" refers to?
 
->
+> URban streams deeper (ensides) erotion, water quality.
 
 The Richards-Baker Index is an index of how flashy a stream is. It is calculated as $$RBI = (\sum_{j = 1}^n |Q_j - Q_{j-1}| / \sum_{j = 1}^n Q_j) / Catchment Area$$
 
+> Normalize to take in to acount concentration time of big and small catchments. You could also try to find a way to normalyze by cathment shape
+
 ```{r Flashiness}
-TFCsitedata <- readNWISsite(site = "02097280")
+TFCsitedata <- readNWISsite(site = "02097280") #to see what info we have
 TFC.catchment.size <- TFCsitedata$drain_area_va #square miles
 
 RBI_TFC2018 <- (
@@ -159,7 +259,7 @@ RBI_EC2018 <- (
 
 Which stream is flashier?
 
->
+> EC has flashier changes in hydrology. Flashy. How quickly the flow responds to events.
 
 ## Chemical Flashiness
 
