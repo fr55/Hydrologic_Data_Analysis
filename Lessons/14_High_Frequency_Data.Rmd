@@ -25,6 +25,15 @@ Wednesday we used high-frequency hydrographs to learn about how water flows thro
 ```{r, message = FALSE}
 getwd()
 
+#install.packages("streamMetabolizer", dependencies=TRUE, 
+#                 repos=c("https://owi.usgs.gov/R", "https://cran.rstudio.com"))
+
+library(devtools)
+#install_github("streampulse/StreamPULSE")
+
+
+
+
 # install.packages("StreamPULSE")
 # install.packages("streamMetabolizer")
 
@@ -50,6 +59,8 @@ theme_set(theme_classic(base_size = 12))
 ## Chemical Flashiness
 
 Chemical concentrations in rivers can be either highly variable with discharge, or "chemostatic", which means the concentration barely changes with discharge. 
+
+> how quickly and how ... it will change
 
 ```{r}
 CCdat <- readNWISuv(
@@ -84,6 +95,10 @@ ggplot(Potdat,
   scale_y_log10()
 ```
 
+> CQ plot. Concentration Discharge. Things We care about: the slope. no slope chemostatic. Neg slope. diluting. Positive slope:Flushing (the chem its being flushed in to the stream)
+
+> the sources over the storm come from diff path ways (sources). histerecis.
+
 Which of these rivers is more chemostatic?
 
 >
@@ -101,6 +116,9 @@ dygraph(
   ) %>% 
   dySeries("Nitrate", axis = "y2") %>%
   dyRangeSelector()
+
+
+# nitrate decreases with storms.
 ```
 
 Look at the storm that occured around February 1st. Do you expect this storm to be a flushing or a diluting storm?
@@ -114,6 +132,19 @@ PotomacStorm <- Potdat %>%
 ggplot(PotomacStorm, aes(x = Flow_Inst, y = Nitrate_mgl, color = dateTime)) +
   geom_point() 
 
+#clock and anticlok wise histerecis
+
+# Is diluting. Anticlockwize. The rising leam of the storm has a lower concentration that the one that is going down (the falling leam).
+
+#in this cases it is not posible to estimate concentration with flow.
+
+#concentrattion of nitrogen are lower in the quick pathways. The nitrogen is in the groundwater. not in the surface of the soil.
+
+#Questions: When the Conc are higher? is it diluting?
+
+#Diluting storms. what means for the system. You are adding water but no more nutrients. 
+
+#The diluting anticlock is more common.
 
 ```
 
@@ -129,15 +160,19 @@ Which direction do hysteresis loops go for flushing storms?
 
 >
 
+> this are the ways hidrology can impact water quality.
+
 ## Using dissolved oxygen to estimate metabolism
 
 What is "ecosystem metabolism"?
 
->
+> The rate that an ecosystem consumes energy
 
 Why would we want to know the *GPP* and *ER* of a river reach?
 
->
+> GPP anr ER (Ecosystem Respiration)
+
+> we have biomes. Can we clasify streams in similar ways.
 
 
 The StreamPulse project is a group of researchers around the world who are measuring oxygen concentrations in streams to determine the GPP and ER of many different types of streams and rivers from around the globe. We will be using data from their website for this class period. This project uses the R package `streamMetabolizer` to compute its estimates of metabolism and allows data download from its site using the `StreamPULSE` R package.
@@ -154,13 +189,20 @@ Enodat <- request_data(
   enddate = "2016-09-20"
   )
 
-Eno.lon <- Enodat[[2]]$lon
+Eno.lon <- Enodat[[2]]$lon  #the double bracket is how to call objects from a list.
 
 Eno.DO <- Enodat[[1]] %>%
   spread(value = value, key = variable) %>%
   mutate(DateTime_Solar = convert_UTC_to_solartime(DateTime_UTC, Eno.lon))
 
+
+#the convert_UTC_to_solartime() function is the thing that needed streampulse.
+
 ggplot(Eno.DO, aes(x = DateTime_Solar, y = DO_mgL)) + geom_line()
+
+#net heterotrophic. Eno produces CO2.
+
+
 ```
 
 In a nutshell, the package uses a Bayesian statistical approach to fit the following model to the data: 

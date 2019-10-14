@@ -261,6 +261,8 @@ Which stream is flashier?
 
 > EC has flashier changes in hydrology. Flashy. How quickly the flow responds to events.
 
+> Quick flow responds faster. Base flow slower.
+
 ## Chemical Flashiness
 
 Chemical concentrations in rivers can be either highly variable with discharge, or "chemostatic", which means the concentration barely changes with discharge. 
