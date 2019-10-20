@@ -35,7 +35,7 @@ Today, we will be working with the USA rivers shape file (see metadata file in R
 
 ### Water features line objects
 ```{r}
-waterfeatures <- st_read("../Data/Raw/hydrogl020.dbf")
+waterfeatures <- st_read("./Data/Raw/hydrogl020.dbf")
 class(waterfeatures)
 
 # Filter for North Carolina
@@ -51,7 +51,7 @@ The .dbf file extension represents an ESRI shapefile. From the `st_read` functio
 Waterfeaturesplot <- 
 ggplot(waterfeatures) +
   geom_sf(aes(fill = FEATURE, color = FEATURE)) +
-  scale_color_viridis_d(option = "magma", end = 0.9) +
+  scale_color_viridis_d(option = "magma", end = 0.9) + #the d is discrete.
   scale_fill_viridis_d(option = "magma", end = 0.9)
 print(Waterfeaturesplot)
 
@@ -61,7 +61,7 @@ print(Waterfeaturesplot)
 
 We will upload the HUC6 watershed designations for North Carolina. Note that in the Watersheds_Spatial folder, there are many different shape file datasets going from HUC2 (largest) to HUC16 (smallest) and NWIS drainage lines. These are all downloaded as zip from the Watershed Boundary Dataset (WBD).
 ```{r}
-HUC6 <- st_read("../Data/Raw/Watersheds_Spatial/WBDHU6.dbf")
+HUC6 <- st_read("./Data/Raw/Watersheds_Spatial/WBDHU6.dbf")
 
 summary(HUC6$States)
 HUC6.NC <- HUC6 %>%
@@ -117,3 +117,12 @@ What features are prevalent in the Neuse River basin? Where do certain features 
 ## Closing Discussion
 
 What could you do with the catchment and water features datasets as base layers for an analysis of physical or water quality data?
+
+```{r}
+#FRA
+library(mapview)
+HUC12 <- st_read("./Data/Raw/Watersheds_Spatial/WBDHU16.dbf")
+
+mapview(HUC14)
+```
+
