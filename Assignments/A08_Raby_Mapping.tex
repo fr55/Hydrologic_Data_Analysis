@@ -1,0 +1,772 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=2.54cm]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Assignment 8: Mapping},
+            pdfauthor={Felipe Raby Amadori},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{Assignment 8: Mapping}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Felipe Raby Amadori}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+    \date{}
+    \predate{}\postdate{}
+  
+
+\begin{document}
+\maketitle
+
+\hypertarget{overview}{%
+\subsection{OVERVIEW}\label{overview}}
+
+This exercise accompanies the lessons in Hydrologic Data Analysis on
+mapping
+
+\hypertarget{directions}{%
+\subsection{Directions}\label{directions}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Change ``Student Name'' on line 3 (above) with your name.
+\item
+  Work through the steps, \textbf{creating code and output} that fulfill
+  each instruction.
+\item
+  Be sure to \textbf{answer the questions} in this assignment document.
+\item
+  When you have completed the assignment, \textbf{Knit} the text and
+  code into a single pdf file.
+\item
+  After Knitting, submit the completed exercise (pdf file) to the
+  dropbox in Sakai. Add your last name into the file name (e.g.,
+  ``A08\_Salk.html'') prior to submission.
+\end{enumerate}
+
+The completed exercise is due on 23 October 2019 at 9:00 am.
+
+\hypertarget{setup}{%
+\subsection{Setup}\label{setup}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Verify your working directory is set to the R project file,
+\item
+  Load the tidyverse, lubridate, cowplot, LAGOSNE, sf, maps, and viridis
+  packages.
+\item
+  Set your ggplot theme (can be theme\_classic or something else)
+\item
+  Load the lagos database, the USA rivers water features shape file, and
+  the HUC6 watershed shape file.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# 1. Verify your working directory is set to the R project file}
+\KeywordTok{getwd}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "C:/Users/Felipe/OneDrive - Duke University/1. DUKE/Ramos 3 Semestre/Hydrologic_Data_Analysis"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# 2. Load the tidyverse, lubridate, cowplot, LAGOSNE, sf, maps, and viridis packages }
+
+\NormalTok{packages <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}
+  \StringTok{"ggplot2"}\NormalTok{, }
+  \StringTok{"tidyverse"}\NormalTok{, }
+  \StringTok{"lubridate"}\NormalTok{, }
+  \StringTok{"cowplot"}\NormalTok{,}
+  \StringTok{"LAGOSNE"}\NormalTok{,}
+  \StringTok{"sf"}\NormalTok{,}
+  \StringTok{"maps"}\NormalTok{,}
+  \StringTok{"viridis"}
+\NormalTok{  )}
+\KeywordTok{invisible}\NormalTok{(}
+  \KeywordTok{suppressPackageStartupMessages}\NormalTok{(}
+    \KeywordTok{lapply}\NormalTok{(packages, library, }\DataTypeTok{character.only =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{    )}
+\NormalTok{  ) }
+
+\CommentTok{# 3. Set your ggplot theme (can be theme_classic or something else)}
+\NormalTok{felipe_theme <-}\StringTok{ }\KeywordTok{theme_light}\NormalTok{(}\DataTypeTok{base_size =} \DecValTok{12}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{axis.text =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{color =} \StringTok{"grey8"}\NormalTok{), }
+        \DataTypeTok{legend.position =} \StringTok{"right"}\NormalTok{, }\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{hjust =} \FloatTok{0.5}\NormalTok{)) }
+\KeywordTok{theme_set}\NormalTok{(felipe_theme)}
+
+\CommentTok{# 4. Load the lagos database, the USA rivers water features shape file, and the HUC6}
+\CommentTok{# watershed shape file.}
+
+\NormalTok{LAGOSdata <-}\StringTok{ }\KeywordTok{lagosne_load}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in `_f`(version = version, fpath = fpath): LAGOSNE version
+## unspecified, loading version: 1.087.3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{HUC6.WS <-}\StringTok{ }\KeywordTok{st_read}\NormalTok{(}\StringTok{"./Data/Raw/Watersheds_Spatial/WBDHU6.dbf"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Reading layer `WBDHU6' from data source `C:\Users\Felipe\OneDrive - Duke University\1. DUKE\Ramos 3 Semestre\Hydrologic_Data_Analysis\Data\Raw\Watersheds_Spatial\WBDHU6.dbf' using driver `ESRI Shapefile'
+## Simple feature collection with 33 features and 15 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -90.6235 ymin: 24.39533 xmax: -75.3981 ymax: 37.52103
+## epsg (SRID):    4269
+## proj4string:    +proj=longlat +datum=NAD83 +no_defs
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{USAwaterfeatures <-}\StringTok{ }\KeywordTok{st_read}\NormalTok{(}\StringTok{"./Data/Raw/hydrogl020.dbf"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Reading layer `hydrogl020' from data source `C:\Users\Felipe\OneDrive - Duke University\1. DUKE\Ramos 3 Semestre\Hydrologic_Data_Analysis\Data\Raw\hydrogl020.dbf' using driver `ESRI Shapefile'
+## Simple feature collection with 76975 features and 12 fields
+## geometry type:  LINESTRING
+## dimension:      XY
+## bbox:           xmin: -179.9982 ymin: 17.67469 xmax: 179.9831 ymax: 71.39819
+## epsg (SRID):    NA
+## proj4string:    NA
+\end{verbatim}
+
+\hypertarget{mapping-water-quality-in-lakes}{%
+\subsection{Mapping water quality in
+lakes}\label{mapping-water-quality-in-lakes}}
+
+Complete the in-class exercise from lesson 15, to map average secchi
+depth measurements across states in Maine, considering lake area and
+lake depth as predictors for water clarity. Steps here are identical to
+the lesson, with the following edits:
+
+\begin{itemize}
+\tightlist
+\item
+  Make sure all your wrangling is done in this document (this includes
+  basic wrangling of the LAGOS database)
+\item
+  In your cowplot, do not adjust the legend items (even though they look
+  ugly). Rather, reflect on how you would improve them with additional
+  coding.
+\item
+  For item 9, \textbf{do} run a regression on secchi depth by lake area
+  and a separate regression on secchi depth by lake depth. Make
+  scatterplots of these relationships. Note that log-transforming one of
+  these items may be necessary.
+\end{itemize}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\tightlist
+\item
+  Filter the states and secchi depth datasets so that they contain Maine
+  only. For the secchi depth dataset, create a summary dataset with just
+  the mean secchi depth.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# generate a map of U.S. states}
+\NormalTok{states <-}\StringTok{ }\KeywordTok{st_as_sf}\NormalTok{(}\KeywordTok{map}\NormalTok{(}\DataTypeTok{database =} \StringTok{"state"}\NormalTok{, }\DataTypeTok{plot =} \OtherTok{FALSE}\NormalTok{, }\DataTypeTok{fill =} \OtherTok{TRUE}\NormalTok{, }\DataTypeTok{col =} \StringTok{"white"}\NormalTok{))}
+
+\CommentTok{# filter only states that are included in the LAGOSNE database}
+\NormalTok{states.subset <-}\StringTok{ }\KeywordTok{filter}\NormalTok{(states, ID }\OperatorTok{%in%}\StringTok{ }
+\StringTok{                          }\KeywordTok{c}\NormalTok{(}\StringTok{"maine"}\NormalTok{))}
+
+\CommentTok{# load LAGOSNE data frames}
+\NormalTok{LAGOSlocus <-}\StringTok{ }\NormalTok{LAGOSdata}\OperatorTok{$}\NormalTok{locus}
+\NormalTok{LAGOSstate <-}\StringTok{ }\NormalTok{LAGOSdata}\OperatorTok{$}\NormalTok{state}
+\NormalTok{LAGOSnutrient <-}\StringTok{ }\NormalTok{LAGOSdata}\OperatorTok{$}\NormalTok{epi_nutr}
+\NormalTok{LAGOSlimno <-}\StringTok{ }\NormalTok{LAGOSdata}\OperatorTok{$}\NormalTok{lakes_limno}
+
+\CommentTok{# Create a data frame to visualize secchi depth}
+\NormalTok{LAGOScombined <-}\StringTok{ }
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(LAGOSnutrient, LAGOSlocus) }\OperatorTok{%>%}\StringTok{ }\CommentTok{#locus gives you location}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(., LAGOSlimno) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{left_join}\NormalTok{(., LAGOSstate) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{is.na}\NormalTok{(state)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{select}\NormalTok{(lagoslakeid, sampledate, secchi, lake_area_ha, maxdepth, nhd_lat, nhd_long, state)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Joining, by = "lagoslakeid"
+\end{verbatim}
+
+\begin{verbatim}
+## Joining, by = c("lagoslakeid", "nhdid", "nhd_lat", "nhd_long")
+\end{verbatim}
+
+\begin{verbatim}
+## Joining, by = "state_zoneid"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{LAGOScombined.maine <-}\StringTok{ }\KeywordTok{filter}\NormalTok{(LAGOScombined, state }\OperatorTok{==}\StringTok{ "ME"}\NormalTok{)}
+
+\CommentTok{# create a summary dataset with just the mean secchi depth}
+\NormalTok{secchi.summary <-}\StringTok{ }\NormalTok{LAGOScombined.maine }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(lagoslakeid) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{secchi.mean =} \KeywordTok{mean}\NormalTok{(secchi)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{drop_na}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{5}
+\tightlist
+\item
+  Create a plot of mean secchi depth for lakes in Maine, with mean
+  secchi depth designated as color and the lake area as the size of the
+  dot. Remember that you are using size in the aesthetics and should
+  remove the size = 1 from the other part of the code. Adjust the
+  transparency of points as needed.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{secchi.summary.plot <-}\StringTok{ }\NormalTok{LAGOScombined.maine }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{group_by}\NormalTok{(lagoslakeid) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{secchi.mean =} \KeywordTok{mean}\NormalTok{(secchi),}
+            \DataTypeTok{area =} \KeywordTok{mean}\NormalTok{(lake_area_ha),}
+            \DataTypeTok{depth =} \KeywordTok{mean}\NormalTok{(maxdepth),}
+            \DataTypeTok{lat =} \KeywordTok{mean}\NormalTok{(nhd_lat),}
+            \DataTypeTok{long =} \KeywordTok{mean}\NormalTok{(nhd_long)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{drop_na}\NormalTok{()}
+
+\NormalTok{secchi.sf <-}\StringTok{ }\KeywordTok{st_as_sf}\NormalTok{(secchi.summary.plot, }\DataTypeTok{coords =} \KeywordTok{c}\NormalTok{(}\StringTok{"long"}\NormalTok{, }\StringTok{"lat"}\NormalTok{), }\DataTypeTok{crs =} \DecValTok{4326}\NormalTok{)}
+
+\NormalTok{Secchiplot <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_sf}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ states.subset, }\DataTypeTok{fill =} \StringTok{"white"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_sf}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ secchi.sf, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color =}\NormalTok{ secchi.mean, }\DataTypeTok{size =}\NormalTok{ area), }
+          \DataTypeTok{alpha =} \FloatTok{0.5}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_color_viridis_c}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{color =} \StringTok{"Average Secchi Depth (m)"}\NormalTok{, }\DataTypeTok{size =} \StringTok{"Lake Area (ha)"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{"top"}\NormalTok{)}
+\KeywordTok{print}\NormalTok{(Secchiplot)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A08_Raby_Mapping_files/figure-latex/unnamed-chunk-2-1.pdf}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Create a second plot, but this time use maximum depth of the lake as
+  the size of the dot.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{Secchiplot2 <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_sf}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ states.subset, }\DataTypeTok{fill =} \StringTok{"white"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_sf}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ secchi.sf, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color =}\NormalTok{ secchi.mean, }\DataTypeTok{size =}\NormalTok{ depth), }
+          \DataTypeTok{alpha =} \FloatTok{0.5}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_color_viridis_c}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{color =} \StringTok{"Average Secchi Depth (m)"}\NormalTok{, }\DataTypeTok{size =} \StringTok{"Maximum Depth (m)"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position =} \StringTok{"top"}\NormalTok{)}
+\KeywordTok{print}\NormalTok{(Secchiplot2)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A08_Raby_Mapping_files/figure-latex/unnamed-chunk-3-1.pdf}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{7}
+\tightlist
+\item
+  Plot these maps in the same plot with the \texttt{plot\_grid}
+  function. Don't worry about adjusting the legends (if you have extra
+  time this would be a good bonus task).
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot_grid}\NormalTok{(Secchiplot, Secchiplot2)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A08_Raby_Mapping_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+What would you change about the legend to make it a more effective
+visualization?
+
+\begin{quote}
+First of all I would made them fit into the width of the page, so It can
+be seen all the information that the legend is suppose to provide.
+Second, I would try to create a legend that explains what the actual
+diameters of the points mean in terms of Lake Area for one plot and
+Maximum Depth for the other one instead of the squares that are been
+shown right now. This squares do not communicate anything to the reader
+except maybe information about the scale of the values (in the case of
+Lake Area it does not even do that, showing only values of thousands of
+hectares when many lakes have areas below 100 hectares). You could also
+use only one Average Secchi Depth legend after making sure that the
+scales in both plots for Secchi Depth is equivalent.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{8}
+\tightlist
+\item
+  What relationships do you see between secchi depth, lake area, and
+  lake depth? Which of the two lake variables seems to be a stronger
+  determinant of secchi depth? (make a scatterplot and run a regression
+  to test this)
+\end{enumerate}
+
+\emph{Note: consider log-transforming a predictor variable if
+appropriate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(secchi.summary.plot, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =} \KeywordTok{log}\NormalTok{(area), }\DataTypeTok{y =}\NormalTok{ secchi.mean)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_smooth}\NormalTok{(}\DataTypeTok{method=}\NormalTok{lm) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{xlab}\NormalTok{(}\KeywordTok{expression}\NormalTok{(}\StringTok{"log(Area (ha))"}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{ylab}\NormalTok{(}\KeywordTok{expression}\NormalTok{(}\StringTok{"Secchi Depth (m)"}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Lake Area vs Secchi Depth Scatterplot"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{hjust =} \FloatTok{0.5}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A08_Raby_Mapping_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lmAreaSecchi <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(}\KeywordTok{log}\NormalTok{(area) }\OperatorTok{~}\StringTok{ }\NormalTok{secchi.mean, }\DataTypeTok{data =}\NormalTok{ secchi.summary.plot)}
+\KeywordTok{summary}\NormalTok{(lmAreaSecchi)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = log(area) ~ secchi.mean, data = secchi.summary.plot)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -3.8252 -1.1238 -0.1443  0.9638  5.4036 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  3.19817    0.15107  21.170  < 2e-16 ***
+## secchi.mean  0.18865    0.03001   6.287 6.62e-10 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.533 on 547 degrees of freedom
+## Multiple R-squared:  0.06739,    Adjusted R-squared:  0.06569 
+## F-statistic: 39.53 on 1 and 547 DF,  p-value: 6.622e-10
+\end{verbatim}
+
+\begin{quote}
+For the Lake Area variable we performed a log transformation because the
+tail was too long and most of the values were concentrated in the
+smaller area values. In the Lake Area vs Secchi Depth plot it can be
+seen that it seems to exists a positive correlation between log(Area)
+and Secchi Depth, but with an important variability.
+\end{quote}
+
+\begin{quote}
+The linear regression confirms these observations. The null hypothesis
+that there is no effect of Lake Area on Secchi Depth is rejected with a
+5\% level of significance ( F-statistic: 39.53 on 1 and 547 DF, p-value:
+6.622e-10 with a positive slope of the regression line = 0.18865);
+nevertheless, the linear model explains only 6.5\% of the variance of
+the response variable.
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{ggplot}\NormalTok{(secchi.summary.plot, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x =}\NormalTok{ depth, }\DataTypeTok{y =}\NormalTok{ secchi.mean)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_smooth}\NormalTok{(}\DataTypeTok{method=}\NormalTok{lm) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{xlab}\NormalTok{(}\KeywordTok{expression}\NormalTok{(}\StringTok{"Lake Max. Depth (m)"}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{ylab}\NormalTok{(}\KeywordTok{expression}\NormalTok{(}\StringTok{"Secchi Depth (m)"}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Lake Max. Depth vs Secchi Depth Scatterplot"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{hjust =} \FloatTok{0.5}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A08_Raby_Mapping_files/figure-latex/unnamed-chunk-6-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lmDepthSecchi <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(depth }\OperatorTok{~}\StringTok{ }\NormalTok{secchi.mean, }\DataTypeTok{data =}\NormalTok{ secchi.summary.plot)}
+\KeywordTok{summary}\NormalTok{(lmDepthSecchi)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = depth ~ secchi.mean, data = secchi.summary.plot)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -25.971  -4.605  -1.679   2.311  41.476 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)  -0.6005     0.7671  -0.783    0.434    
+## secchi.mean   2.8548     0.1524  18.738   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 7.784 on 547 degrees of freedom
+## Multiple R-squared:  0.3909, Adjusted R-squared:  0.3898 
+## F-statistic: 351.1 on 1 and 547 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{quote}
+In the Lake Maximum Depth vs Secchi Depth plot it can be seen that there
+is a clear positive correlation between Lake Max. Depth and Secchi
+Depth, and with less variability than Lake Area.
+\end{quote}
+
+\begin{quote}
+The linear regression confirms these observations. The null hypothesis
+that there is no effect of Lake Maximum Depth on Secchi Depth is
+rejected with a 5\% level of significance ( F-statistic: 351.1 on 1 and
+547 DF, p-value: \textless{} 2.2e-16 with a positive slope of the
+regression line = 2.8548); moreover, the linear model explains 39\% of
+the variance of the response variable.
+\end{quote}
+
+\hypertarget{mapping-water-features-and-watershed-boundaries}{%
+\subsection{Mapping water features and watershed
+boundaries}\label{mapping-water-features-and-watershed-boundaries}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{9}
+\tightlist
+\item
+  Wrangle the USA rivers and HUC6 watershed boundaries dataset so that
+  they include only the features present in Florida (FL). Adjust the
+  coordinate reference systems if necessary to ensure they use the same
+  projection.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{HUC6.FL <-}\StringTok{ }\NormalTok{HUC6.WS }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(}\KeywordTok{grepl}\NormalTok{(}\StringTok{"FL"}\NormalTok{, States))}
+
+\CommentTok{#To chech that it worked}
+\KeywordTok{summary}\NormalTok{(HUC6.FL}\OperatorTok{$}\NormalTok{States)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       AL    AL,FL AL,FL,GA AL,GA,TN AL,LA,MS    AL,MS       FL    FL,GA 
+##        0        3        1        0        0        0        6        4 
+##       GA GA,NC,SC    LA,MS       NC    NC,SC NC,SC,VA    NC,VA       SC 
+##        0        0        0        0        0        0        0        0
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#it did}
+
+\CommentTok{# Filter for Florida}
+\NormalTok{USAwaterfeatures <-}\StringTok{ }\KeywordTok{filter}\NormalTok{(USAwaterfeatures, STATE }\OperatorTok{==}\StringTok{ "FL"}\NormalTok{)}
+
+\CommentTok{# Remove a couple feature types we don't care about}
+\NormalTok{USAwaterfeatures <-}\StringTok{ }\KeywordTok{filter}\NormalTok{(USAwaterfeatures, FEATURE }\OperatorTok{!=}\StringTok{ "Apparent Limit"} \OperatorTok{&}\StringTok{ }\NormalTok{FEATURE }\OperatorTok{!=}\StringTok{ "Closure Line"}\NormalTok{)}
+
+\KeywordTok{st_crs}\NormalTok{(USAwaterfeatures)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Coordinate Reference System: NA
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{st_crs}\NormalTok{(HUC6.FL)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Coordinate Reference System:
+##   EPSG: 4269 
+##   proj4string: "+proj=longlat +datum=NAD83 +no_defs"
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# USAwaterfeatures does not have coordinate reference information. HUC6 coordinate}
+\CommentTok{# reference information is NAD83 ESPG: 4269.}
+
+\NormalTok{USAwaterfeatures <-}\StringTok{ }\KeywordTok{st_set_crs}\NormalTok{(USAwaterfeatures, }\DecValTok{4269}\NormalTok{)}
+\KeywordTok{st_crs}\NormalTok{(USAwaterfeatures)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Coordinate Reference System:
+##   EPSG: 4269 
+##   proj4string: "+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{10}
+\tightlist
+\item
+  Create a map of watershed boundaries in Florida, with the layer of
+  water features on top. Color the watersheds gray (make sure the lines
+  separating watersheds are still visible) and color the water features
+  by type.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{FLlayers <-}\StringTok{ }\KeywordTok{ggplot}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_sf}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ HUC6.FL, }\DataTypeTok{color =} \StringTok{"gray58"}\NormalTok{, }\DataTypeTok{fill =} \StringTok{"gray80"}\NormalTok{, }\DataTypeTok{alpha =} \FloatTok{0.5}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{geom_sf}\NormalTok{(}\DataTypeTok{data =}\NormalTok{ USAwaterfeatures, }\KeywordTok{aes}\NormalTok{(}\DataTypeTok{fill =}\NormalTok{ FEATURE, }\DataTypeTok{color =}\NormalTok{ FEATURE)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_fill_brewer}\NormalTok{(}\DataTypeTok{palette =} \StringTok{"Set1"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_color_brewer}\NormalTok{(}\DataTypeTok{palette =} \StringTok{"Set1"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{color =} \StringTok{'Water Feature'}\NormalTok{, }\DataTypeTok{fill =} \StringTok{'Water Feature'}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{ggtitle}\NormalTok{(}\StringTok{"Watershed Boundaries and Water Features in Florida"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{plot.title =} \KeywordTok{element_text}\NormalTok{(}\DataTypeTok{hjust =} \FloatTok{0.5}\NormalTok{))}
+\KeywordTok{print}\NormalTok{(FLlayers)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{A08_Raby_Mapping_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{11}
+\tightlist
+\item
+  What are the dominant water features in Florida? How does this
+  distribution differ (or not) compared to North Carolina?
+\end{enumerate}
+
+\begin{quote}
+In most of the inland part of the state the most dominant features are
+streams and lakes; nevertheless, in the south part canals are clearly
+more dominant than streams. Banks can be appreciated all over both
+coastal lines. The extreme south part of the states show some
+intracoastal waterways. Meanwhile, North Carolina is almost everywhere
+dominated by streams and by man made reservoirs built in the stream's
+riverbeds. There are some canals near the coast but are far less
+dominant than canals in south Florida.
+\end{quote}
+
+\hypertarget{reflection}{%
+\subsection{Reflection}\label{reflection}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{12}
+\tightlist
+\item
+  What are 2-3 conclusions or summary points about mapping you learned
+  through your analysis?
+\end{enumerate}
+
+\begin{quote}
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Lake Area can have a positive correlation with Secchi Depth
+\item
+  Lake Maximum Depth can have a positive correlation with Secchi Depth,
+  greater than Lake Area and explaining more variance.
+\item
+  Dominant water features differ among states.
+\end{enumerate}
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{13}
+\tightlist
+\item
+  What data, visualizations, and/or models supported your conclusions
+  from 13?
+\end{enumerate}
+
+\begin{quote}
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Log(Lake Area) and Secchi Depth scatterplot and linear model.
+\item
+  Lake Maximum Depth and Secchi Depth scatterplot and linear model.
+\item
+  Maps of water features created for Florida and NC (this last one in
+  class).
+\end{enumerate}
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{14}
+\tightlist
+\item
+  Did hands-on data analysis impact your learning about mapping relative
+  to a theory-based lesson? If so, how?
+\end{enumerate}
+
+\begin{quote}
+It did. Playing with data is the best way to understand concepts and
+later have them available to apply them in other settings.
+\end{quote}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{15}
+\tightlist
+\item
+  How did the real-world data compare with your expectations from
+  theory?
+\end{enumerate}
+
+\begin{quote}
+I did not have much expectations from theory in this area.
+\end{quote}
+
+
+\end{document}

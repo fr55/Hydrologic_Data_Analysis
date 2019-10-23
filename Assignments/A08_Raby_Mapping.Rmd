@@ -40,8 +40,7 @@ packages <- c(
   "LAGOSNE",
   "sf",
   "maps",
-  "viridis",
-  "maps"
+  "viridis"
   )
 invisible(
   suppressPackageStartupMessages(
@@ -55,7 +54,8 @@ felipe_theme <- theme_light(base_size = 12) +
         legend.position = "right", plot.title = element_text(hjust = 0.5)) 
 theme_set(felipe_theme)
 
-# 4. Load the lagos database, the USA rivers water features shape file, and the HUC6 watershed shape file.
+# 4. Load the lagos database, the USA rivers water features shape file, and the HUC6
+# watershed shape file.
 
 LAGOSdata <- lagosne_load()
 HUC6.WS <- st_read("./Data/Raw/Watersheds_Spatial/WBDHU6.dbf")
@@ -74,7 +74,7 @@ Complete the in-class exercise from lesson 15, to map average secchi depth measu
 
 ```{r}
 # generate a map of U.S. states
-states <- st_as_sf(map(database = "state", plot = TRUE, fill = TRUE, col = "white"))
+states <- st_as_sf(map(database = "state", plot = FALSE, fill = TRUE, col = "white"))
 
 # filter only states that are included in the LAGOSNE database
 states.subset <- filter(states, ID %in% 
@@ -134,28 +134,67 @@ print(Secchiplot)
 7. Create a second plot, but this time use maximum depth of the lake as the size of the dot. 
 
 ```{r}
-
+Secchiplot2 <- ggplot() +
+  geom_sf(data = states.subset, fill = "white") +
+  geom_sf(data = secchi.sf, aes(color = secchi.mean, size = depth), 
+          alpha = 0.5) +
+  scale_color_viridis_c() +
+  labs(color = "Average Secchi Depth (m)", size = "Maximum Depth (m)") +
+  theme(legend.position = "top")
+print(Secchiplot2)
 ```
 
 8. Plot these maps in the same plot with the `plot_grid` function. Don't worry about adjusting the legends (if you have extra time this would be a good bonus task).
 
 ```{r}
-
+plot_grid(Secchiplot, Secchiplot2)
 ```
 
 What would you change about the legend to make it a more effective visualization? 
 
-> 
+> First of all I would made them fit into the width of the page, so It can be seen all the information that the legend is suppose to provide. Second, I would try to create a legend that explains what the actual diameters of the points mean in terms of Lake Area for one plot and Maximum Depth for the other one instead of the squares that are been shown right now. This squares do not communicate anything to the reader except maybe information about the scale of the values (in the case of Lake Area it does not even do that, showing only values of thousands of hectares when many lakes have areas below 100 hectares). You could also use only one Average Secchi Depth legend after making sure that the scales in both plots for Secchi Depth is equivalent.
 
 9. What relationships do you see between secchi depth, lake area, and lake depth? Which of the two lake variables seems to be a stronger determinant of secchi depth? (make a scatterplot and run a regression to test this)
 
 *Note: consider log-transforming a predictor variable if appropriate*
 
 ```{r}
+ggplot(secchi.summary.plot, aes(x = log(area), y = secchi.mean)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  xlab(expression("log(Area (ha))")) +
+  ylab(expression("Secchi Depth (m)")) +
+  ggtitle("Lake Area vs Secchi Depth Scatterplot") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+lmAreaSecchi <- lm(log(area) ~ secchi.mean, data = secchi.summary.plot)
+summary(lmAreaSecchi)
+
+
 
 ```
 
-> 
+> For the Lake Area variable we performed a log transformation because the tail was too long and most of the values were concentrated in the smaller area values. In the Lake Area vs Secchi Depth plot it can be seen that it seems to exists a positive correlation between log(Area) and Secchi Depth, but with an important variability.
+
+> The linear regression confirms these observations. The null hypothesis that there is no effect of Lake Area on Secchi Depth is rejected with a 5% level of significance ( F-statistic: 39.53 on 1 and 547 DF, p-value: 6.622e-10 with a positive slope of the regression line = 0.18865); nevertheless, the linear model explains only 6.5% of the variance of the response variable.
+
+```{r}
+ggplot(secchi.summary.plot, aes(x = depth, y = secchi.mean)) +
+  geom_point() +
+  geom_smooth(method=lm) +
+  xlab(expression("Lake Max. Depth (m)")) +
+  ylab(expression("Secchi Depth (m)")) +
+  ggtitle("Lake Max. Depth vs Secchi Depth Scatterplot") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+lmDepthSecchi <- lm(depth ~ secchi.mean, data = secchi.summary.plot)
+summary(lmDepthSecchi)
+
+```
+
+> In the Lake Maximum Depth vs Secchi Depth plot it can be seen that there is a clear positive correlation between Lake Max. Depth and Secchi Depth, and with less variability than Lake Area.
+
+> The linear regression confirms these observations. The null hypothesis that there is no effect of Lake Maximum Depth on Secchi Depth is rejected with a 5% level of significance ( F-statistic: 351.1 on 1 and 547 DF, p-value: < 2.2e-16 with a positive slope of the regression line = 2.8548); moreover, the linear model explains 39% of the variance of the response variable.
 
 ## Mapping water features and watershed boundaries
 
@@ -163,31 +202,66 @@ What would you change about the legend to make it a more effective visualization
 
 ```{r}
 
+HUC6.FL <- HUC6.WS %>%
+  filter(grepl("FL", States))
+
+#To chech that it worked
+summary(HUC6.FL$States)
+#it did
+
+# Filter for Florida
+USAwaterfeatures <- filter(USAwaterfeatures, STATE == "FL")
+
+# Remove a couple feature types we don't care about
+USAwaterfeatures <- filter(USAwaterfeatures, FEATURE != "Apparent Limit" & FEATURE != "Closure Line")
+
+st_crs(USAwaterfeatures)
+st_crs(HUC6.FL)
+
+# USAwaterfeatures does not have coordinate reference information. HUC6 coordinate
+# reference information is NAD83 ESPG: 4269.
+
+USAwaterfeatures <- st_set_crs(USAwaterfeatures, 4269)
+st_crs(USAwaterfeatures)
+
 ```
 
 11. Create a map of watershed boundaries in Florida, with the layer of water features on top. Color the watersheds gray (make sure the lines separating watersheds are still visible) and color the water features by type. 
 
 ```{r}
 
+FLlayers <- ggplot() +
+  geom_sf(data = HUC6.FL, color = "gray58", fill = "gray80", alpha = 0.5) +
+  geom_sf(data = USAwaterfeatures, aes(fill = FEATURE, color = FEATURE)) +
+  scale_fill_brewer(palette = "Set1") +
+  scale_color_brewer(palette = "Set1") +
+  labs(color = 'Water Feature', fill = 'Water Feature') +
+  ggtitle("Watershed Boundaries and Water Features in Florida") +
+  theme(plot.title = element_text(hjust = 0.5))
+print(FLlayers)
 ```
 
 12. What are the dominant water features in Florida? How does this distribution differ (or not) compared to North Carolina?
 
-> 
+> In most of the inland part of the state the most dominant features are streams and lakes; nevertheless, in the south part canals are clearly more dominant than streams. Banks can be appreciated all over both coastal lines. The extreme south part of the states show some intracoastal waterways. Meanwhile, North Carolina is almost everywhere dominated by streams and by man made reservoirs built in the stream's riverbeds. There are some canals near the coast but are far less dominant than canals in south Florida.
 
 ## Reflection
 13. What are 2-3 conclusions or summary points about mapping you learned through your analysis?
 
->
+> 1. Lake Area can have a positive correlation with Secchi Depth
+> 2. Lake Maximum Depth can have a positive correlation with Secchi Depth, greater than Lake Area and explaining more variance.
+> 3. Dominant water features differ among states.
 
 14. What data, visualizations, and/or models supported your conclusions from 13?
 
-> 
+> 1. Log(Lake Area) and Secchi Depth scatterplot and linear model.
+> 2. Lake Maximum Depth and Secchi Depth scatterplot and linear model.
+> 3. Maps of water features created for Florida and NC (this last one in class).
 
 15. Did hands-on data analysis impact your learning about mapping relative to a theory-based lesson? If so, how?
 
->
+> It did. Playing with data is the best way to understand concepts and later have them available to apply them in other settings.
 
 16.	How did the real-world data compare with your expectations from theory?
 
->
+> I did not have much expectations from theory in this area.
